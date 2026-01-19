@@ -18,6 +18,8 @@ const staff = require("./routes/staffRoutes")
 const activity = require("./routes/activityRoutes")
 const attendace = require("./routes/attendanceRoutes")
 
+const vehicle = require('./routes/vehicleRoutes');
+
 app.use(express.json());
 
 const allowedOrigins = [
@@ -58,6 +60,8 @@ app.use("/api/customer", customer)
 app.use("/api/staff", staff)
 app.use("/api/activity", activity)
 app.use("/api/attendance", attendace)
+app.use("/api/vehicle", vehicle)
+
 
 app.post('/api/driveUpload', upload.single('file'), async (req, res) => {
     try {
