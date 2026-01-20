@@ -6,11 +6,7 @@ const staffSchema = new mongoose.Schema({
         required:[true,"Please Enter Your Name"],
         minLength: 3
     },
-    phone:{
-      type: Number,
-      required:true  
-    },
-    designation : {
+    type:{
       type: String,
       required:true  
     },
@@ -21,10 +17,6 @@ const staffSchema = new mongoose.Schema({
         lowercase:true,
         validate:[validator.isEmail, "Please Provide a Valid Email"]
     },
-    employeeId : {
-      type  : Number,
-      required: true
-    },
     staffStatus: {
       type:String,
       default: 'active'
@@ -32,10 +24,7 @@ const staffSchema = new mongoose.Schema({
     createdBy: {
       type : String
     },
-    address : {
-      type : String
-    },
-    staffId : {
+    staffCode : {
       type  : String,
     },
     createdAt:{
@@ -46,90 +35,20 @@ const staffSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    file: {
-        type: Buffer
+    img : {
+        type : String
     },
-    dob: {
-      type: String,
-      default : null
-    },
-    doj : {
-      type :  String,
-      default : null
-    },
-    blood : {
-      type : String
-    },
-    aadhar : {
-      type : Number
-    },
-    staffId : {
-      type  : String,
-      default: () => Math.floor(10000 + Math.random() * 90000).toString()
-    },
-    emergencyContact : {
-      type  : Number,
-      default : null
-    },
-    emergencyContact2 : {
-      type  : Number,
-      default : null
-    },
-    bankName : {
-      type  : String
-    },
-    accountNo : {
-      type  : Number,
-      default : null
-    },
-    branch : {
-      type  : String
-    },
-    ifsc : {
-      type  : String
-    },
-    pan : {
-      type  : String
-    },
-    family : {
-      fatherName : {
-      type  : String
-    },
-    motherName : {
-      type  : String
-    },
-    siblingName : {
-      type  : String
-    },
-    familyNumber : {
-      type  : Number
-    },
-    familyMembers : {
-      type  : Number
-    },
-    },
-    education : {
-      degree : {
-        type  : String
+   documents: [
+      {
+        filename: { type: String },      
+        url: { type: String },             
+        public_id: { type: String },       
+        uploadedAt: {
+          type: Date,
+          default: Date.now,
+        },
       },
-      universityName : {
-        type  : String
-      },
-      degreeName1 : {
-        type  : String
-      }
-      ,
-      degreeName2 : {
-        type  : String
-      }
-    },
-    
-  
-    
-    
-    
-    
-
+    ],
 
 })
 

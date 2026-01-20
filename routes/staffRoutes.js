@@ -1,25 +1,14 @@
-const express = require("express")
-const router = express.Router()
-const multer = require("multer")
-const staffController = require('../controllers/staffController')
+const express = require("express");
+const router = express.Router();
+const upload = require("../middleware/multer");
+const staffController = require("../controllers/staffController");
 
-const storage = multer.memoryStorage();
-const upload  = multer({storage : storage})
-
-router.put("/isDelete/:id", staffController.updateIsDeleted)
-router.post("/importLeads", staffController.importStaff)
-router.get('/exportStaffData', staffController.exportStaff)
-
-router
-    .route("/")
-    .get(staffController.getAllDetails)
-    .post(upload.single('file'), staffController.createStaff)
-
-router
-    .route("/:id")
-    .put(upload.single('file'),staffController.updateStaffData)
-
-
-
+router.post("/", upload.single("img"), staffController.createStaff);
+router.get("/", staffController.getAllStaff);
+router.get("/:id", staffController.getStaffById);
+router.put("/:id", upload.single("img"), staffController.updateStaff);
+router.delete("/:id", staffController.softDeleteStaff);
+router.patch("/:id/status", staffController.changeStaffStatus);
+router.post("/:staffId/document", upload.single("file"), staffController.uploadStaffDocument);
 
 module.exports = router;
