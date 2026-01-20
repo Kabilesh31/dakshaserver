@@ -10,24 +10,43 @@ const productSchema = new mongoose.Schema({
       type:String,
       required:true
     },
-    value:{
-      type: Number,
-      required:true  
+    brand :{
+      type :  String,
+      required : true,
     },
-    category:{
-      type: String,
-      required:true
+    value : {
+      type : Number,
+      required : true
     },
-    description: {
-        type: String,
-        required:true
+    boxPacking : {
+      type : Boolean,
+      required : false
     },
-    file: Buffer,
+    ptr1 : {
+      type : Number
+    },
+    ptr2 : {
+      type : Number
+    },
+    ptr3 : {
+      type : Number
+    },
+    notes : {
+      type : String
+    },
+    img : {
+      type : String
+    },
     createdBy: {
       type : String
     },
-    updatedPrice : {
-      type : Number
+    createdAt : {
+      type : Date,
+      default : Date.now
+    },
+    isDeleted : {
+      type : Boolean,
+      default : false
     }
 })
 
