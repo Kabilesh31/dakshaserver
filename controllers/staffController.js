@@ -16,6 +16,7 @@ exports.createStaff = async (req, res) => {
       type: req.body.type,
       email: req.body.email,
       staffCode: req.body.staffCode,
+      bloodGroup : req.body.bloodGroup,
       createdBy: req.body.createdBy,
       img: imageUrl,
     });

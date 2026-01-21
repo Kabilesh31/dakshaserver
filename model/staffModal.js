@@ -27,6 +27,9 @@ const staffSchema = new mongoose.Schema({
     staffCode : {
       type  : String,
     },
+    bloodGroup : {
+      type : String
+    },
     createdAt:{
         type: Date,
         default: Date.now 
