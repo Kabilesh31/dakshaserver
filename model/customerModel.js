@@ -20,9 +20,11 @@ const customerSchema = new mongoose.Schema({
     routeName:{
         type: String,
       },
-    routeId : {
-        type : String
-    },
+    routeId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Route"
+}
+,
     lineNo : {
       type : Number
     },
