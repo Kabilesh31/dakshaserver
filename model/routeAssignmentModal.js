@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const routeAssignmentSchema = new mongoose.Schema({
   date: {
@@ -6,15 +6,14 @@ const routeAssignmentSchema = new mongoose.Schema({
     required: true
   },
   staffId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId, // Reference to Staff collection
+    ref: "Staff",
     required: true
   },
   routeId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId, // Reference to Route collection
+    ref: "Route",
     required: true
-  },
-  routeName: {
-    type: String
   },
   status: {
     type: String,
@@ -25,9 +24,9 @@ const routeAssignmentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-})
+});
 
-// 🔐 Prevent duplicate route assignment per day
-routeAssignmentSchema.index({ date: 1, routeId: 1 }, { unique: true })
+// Prevent duplicate route assignment per day
+routeAssignmentSchema.index({ date: 1, routeId: 1 }, { unique: true });
 
-module.exports = mongoose.model("RouteAssignment", routeAssignmentSchema)
+module.exports = mongoose.model("RouteAssignment", routeAssignmentSchema);

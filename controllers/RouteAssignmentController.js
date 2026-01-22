@@ -50,22 +50,40 @@ exports.assignRoute = async (req, res) => {
   }
 }
 
+// DELETE /api/routeassign/:id
+exports.deleteAssignment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await RouteAssignment.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Route assignment not found" });
+    }
+
+    res.json({ message: "Route unassigned successfully" });
+  } catch (error) {
+    console.error("Delete Assignment Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 // GET ALL ASSIGNED ROUTES BY DATE (ADMIN)
 exports.getAssignmentsByDate = async (req, res) => {
   try {
-    const { date } = req.query
+    const { date } = req.query;
 
     const assignments = await RouteAssignment.find({ date })
-      .populate("routeId", "routeName")
-      .sort({ createdAt: 1 })
+      .populate("routeId", "routeName description stops estimatedTime") // populate route details
+      .populate("staffId", "name email") // populate staff name and email
+      .sort({ createdAt: 1 });
 
-    res.json(assignments)
+    res.json(assignments);
   } catch (error) {
-    res.status(500).json({
-      message: error.message
-    })
+    res.status(500).json({ message: error.message });
   }
-}
+};
 
 // GET STAFF ROUTES FOR TODAY (STAFF APP)
 exports.getStaffRoutesToday = async (req, res) => {

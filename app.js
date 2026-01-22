@@ -65,7 +65,7 @@ app.use("/api/activity", activity)
 app.use("/api/attendance", attendace)
 app.use("/api/vehicle", vehicle)
 app.use("/api/route", routeZone);
-app.use("/api/routeassign", routeAssign)
+app.use("/api/route-assignment", routeAssign);
 
 app.post('/api/driveUpload', upload.single('file'), async (req, res) => {
     try {
