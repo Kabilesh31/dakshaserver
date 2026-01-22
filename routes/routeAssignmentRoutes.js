@@ -10,15 +10,15 @@ const {
 } = require("../controllers/RouteAssignmentController")
 
 // assign route to staff
-router.post("/route-assign", assignRoute)
+router.post("/", assignRoute)
 
 // admin – get assigned routes by date
-router.get("/route-assign", getAssignmentsByDate)
+router.get("/", getAssignmentsByDate)
 
 // staff – get today routes
-router.get("/route-assign/staff/:staffId", getStaffRoutesToday)
+router.get("/staff/:staffId", getStaffRoutesToday)
 
 // mark route completed
-router.put("/route-assign/:id/complete", completeRoute)
+router.put("/:id/complete", completeRoute)
 
 module.exports = router
