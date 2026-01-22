@@ -18,7 +18,10 @@ const staff = require("./routes/staffRoutes")
 const activity = require("./routes/activityRoutes")
 const attendace = require("./routes/attendanceRoutes")
 
+
 const vehicle = require('./routes/vehicleRoutes');
+const routeZone = require("./routes/routeRoutes");
+const routeAssign = require("./routes/routeAssignmentRoutes");
 
 app.use(express.json());
 
@@ -61,7 +64,8 @@ app.use("/api/staff", staff)
 app.use("/api/activity", activity)
 app.use("/api/attendance", attendace)
 app.use("/api/vehicle", vehicle)
-
+app.use("/api/route", routeZone);
+app.use("/api/routeassign", routeAssign)
 
 app.post('/api/driveUpload', upload.single('file'), async (req, res) => {
     try {
