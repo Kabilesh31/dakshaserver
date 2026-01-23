@@ -27,6 +27,7 @@ app.use(express.json());
 
 const allowedOrigins = [
     "http://localhost:3000", // Web
+    "https://retailpulse2.netlify.app",
     "https://kochai.netlify.app",
     "http://192.168.0.100:3000"
     // "http://localhost:8081", // React Native
