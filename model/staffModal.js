@@ -21,6 +21,12 @@ const staffSchema = new mongoose.Schema({
       type:String,
       default: 'active'
     },
+    dutyStatus: {
+  type: String,
+  enum: ["active", "inactive"],
+  default: "active",
+},
+
     createdBy: {
       type : String
     },

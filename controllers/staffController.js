@@ -19,7 +19,9 @@ exports.createStaff = async (req, res) => {
       bloodGroup : req.body.bloodGroup,
       createdBy: req.body.createdBy,
       img: imageUrl,
+      dutyStatus: req.body.dutyStatus || "active",
     });
+  
 
     res.status(201).json({
       message: "Staff created successfully",
@@ -66,6 +68,14 @@ exports.updateStaff = async (req, res) => {
   try {
     const updateData = { ...req.body };
 
+    // ✅ Allow only valid dutyStatus values
+    if (updateData.dutyStatus && !["active", "inactive"].includes(updateData.dutyStatus)) {
+      return res.status(400).json({
+        message: "Invalid dutyStatus. Allowed values: active, inactive",
+      });
+    }
+
+    // Upload image if provided
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer, "staff");
       updateData.img = result.secure_url;
@@ -74,7 +84,10 @@ exports.updateStaff = async (req, res) => {
     const staff = await Staff.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true }
+      {
+        new: true,
+        runValidators: true, // ✅ important
+      }
     );
 
     if (!staff) {
@@ -85,10 +98,13 @@ exports.updateStaff = async (req, res) => {
       message: "Staff updated successfully",
       data: staff,
     });
+
   } catch (error) {
+    console.error("Update Staff Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // soft delete - isDeleted status will change
 exports.softDeleteStaff = async (req, res) => {
