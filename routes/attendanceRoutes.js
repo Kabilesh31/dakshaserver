@@ -1,11 +1,12 @@
-const attendanceController = require('../controllers/attendanceController');
-const express = require('express');
+const express = require("express");
 const router = express.Router();
+const attendanceController = require("../controllers/attendanceController");
 
+// check-in
+router.post("/check-in", attendanceController.checkIn);
 
-router.post('/', attendanceController.createAttendance);
-router.get('/', attendanceController.getAttendance);
-
+// check-out
+router.post("/check-out", attendanceController.checkOut);
 
 
 module.exports = router;

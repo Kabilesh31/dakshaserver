@@ -5,11 +5,11 @@ exports.isStaffAuthenticated = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
-    // 1️⃣ Check token
+    // 1️⃣ If no token, skip authentication (for admin frontend CRUD)
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        message: "Authorization token missing",
-      });
+      req.staff = null;  // No staff info
+      req.staffId = null;
+      return next();     // Allow request to continue
     }
 
     const token = authHeader.split(" ")[1];
@@ -21,15 +21,11 @@ exports.isStaffAuthenticated = async (req, res, next) => {
     const staff = await Staff.findById(decoded.id).select("-password");
 
     if (!staff || staff.isDeleted) {
-      return res.status(401).json({
-        message: "Unauthorized access",
-      });
+      return res.status(401).json({ message: "Unauthorized access" });
     }
 
     if (staff.staffStatus !== "active") {
-      return res.status(403).json({
-        message: "Staff account is inactive",
-      });
+      return res.status(403).json({ message: "Staff account is inactive" });
     }
 
     // 4️⃣ Attach staff to request
@@ -38,8 +34,9 @@ exports.isStaffAuthenticated = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({
-      message: "Invalid or expired token",
-    });
+    // If token is invalid, treat as no staff (optional)
+    req.staff = null;
+    req.staffId = null;
+    next();  // allow admin frontend to proceed
   }
 };
