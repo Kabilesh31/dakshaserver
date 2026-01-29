@@ -1,5 +1,7 @@
 const Staff = require("../model/staffModal");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 // create employee
 exports.createStaff = async (req, res) => {
@@ -15,18 +17,36 @@ exports.createStaff = async (req, res) => {
       name: req.body.name,
       type: req.body.type,
       email: req.body.email,
+      mobile: req.body.mobile,          
+      password: req.body.mobile,        
       staffCode: req.body.staffCode,
-      bloodGroup : req.body.bloodGroup,
+      bloodGroup: req.body.bloodGroup,
       createdBy: req.body.createdBy,
       img: imageUrl,
       dutyStatus: req.body.dutyStatus || "active",
     });
-  
 
     res.status(201).json({
       message: "Staff created successfully",
       data: staff,
     });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+
+    const staff = await Staff.findById(req.params.id).select("+password");
+
+    staff.password = newPassword; 
+    await staff.save();           
+
+    res.json({ message: "Password updated successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -194,6 +214,38 @@ exports.uploadStaffDocument = async (req, res) => {
       staff,
     });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// change duty status - active / inactive
+exports.changeDutyStatus = async (req, res) => {
+  try {
+    const { dutyStatus } = req.body;
+
+    // validation
+    if (!["active", "inactive"].includes(dutyStatus)) {
+      return res.status(400).json({
+        message: "Invalid dutyStatus. Allowed values: active, inactive",
+      });
+    }
+
+    const staff = await Staff.findByIdAndUpdate(
+      req.params.id,
+      { dutyStatus },
+      { new: true }
+    );
+
+    if (!staff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+
+    res.status(200).json({
+      message: "Duty status updated successfully",
+      data: staff,
+    });
+  } catch (error) {
+    console.error("Change Duty Status Error:", error);
     res.status(500).json({ error: error.message });
   }
 };

@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const auth = require("./routes/userRoutes")
 const cors = require('cors');
 const AppError = require("./utils/appError");
+const authRoutes = require("./routes/authRoutes");
 const globalErrorHandling = require("./controllers/errorController")
 const productData = require("./routes/productRoutes")
 const stockData = require("./routes/stockRoutes")
@@ -55,7 +56,7 @@ app.use(
     }
 }))
 
-
+app.use("/api/auth", authRoutes);
 app.use('/api/user', auth)
 app.use("/api/product", productData)
 app.use("/api/stock", stockData)
@@ -69,6 +70,7 @@ app.use("/api/vehicle", vehicle)
 app.use("/api/route", routeZone);
 app.use("/api/route-assignment", routeAssign);
 app.use("/api/delivery", deliveryRoutes);
+
 
 app.post('/api/driveUpload', upload.single('file'), async (req, res) => {
     try {
