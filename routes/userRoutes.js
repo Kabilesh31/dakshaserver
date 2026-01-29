@@ -1,24 +1,17 @@
-const express = require("express")
-const router = express.Router()
-const userController = require("../controllers/userController")
-const authController = require("../controllers/authController")
+const express = require("express");
+const router = express.Router();
+const upload = require("../middleware/multer");
+const staffController = require("../controllers/staffController");
 
 
-router.post("/signup",authController.signup)
-router.post("/login",authController.login)
-router.post("/forgotPassword",authController.forgotPassword)
-router.patch("/resetPassword/:token",authController.resetPassword)
-router.patch("/updateMyPassword", authController.protect, authController.updatePassword)
 
-router
-    .route("/")
-    .get(userController.getAllUser)
-    .post(userController.createUser)
+router.get("/", staffController.getAllStaff);
+router.post("/", upload.single("img"), staffController.createStaff);
+router.get("/:id", staffController.getStaffById);
+router.put("/:id", upload.single("img"), staffController.updateStaff);
+router.delete("/:id", staffController.softDeleteStaff);
+router.patch("/:id/status", staffController.changeStaffStatus);
+router.patch("/:id/duty-status", staffController.changeDutyStatus);
+router.post("/:staffId/document", upload.single("file"), staffController.uploadStaffDocument);
 
-router
-    .route("/:id")
-    .get(userController.getUser)
-    .put(userController.updateUser)
-
-
-module.exports = router
+module.exports = router;

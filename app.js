@@ -18,6 +18,8 @@ const customer = require("./routes/customerRoutes")
 const staff = require("./routes/staffRoutes")
 const activity = require("./routes/activityRoutes")
 const attendace = require("./routes/attendanceRoutes")
+const staffAuthRoutes = require("./routes/staffAuthRoutes");
+
 
 
 const vehicle = require('./routes/vehicleRoutes');
@@ -70,6 +72,7 @@ app.use("/api/vehicle", vehicle)
 app.use("/api/route", routeZone);
 app.use("/api/route-assignment", routeAssign);
 app.use("/api/delivery", deliveryRoutes);
+app.use("/api/staff/auth", staffAuthRoutes);
 
 
 app.post('/api/driveUpload', upload.single('file'), async (req, res) => {
