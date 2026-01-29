@@ -35,7 +35,10 @@ exports.createCustomer = async (req, res) => {
 exports.getCustomers = async (req, res) => {
   try {
     const customers = await Customer.find({ isDeleted: false })
-      .sort({ createdAt: -1 });
+      .sort({
+        routeId: 1,   // group by route
+        lineNo: 1     // 🔥 delivery order inside route
+      });
 
     res.status(200).json(customers);
   } catch (error) {
@@ -140,4 +143,12 @@ exports.changeCustomerStatus = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+};
+
+
+exports.getCustomers = async (req, res) => {
+  const customers = await Customer.find({ isDeleted: false })
+    .sort({ routeId: 1, lineNo: 1 });
+
+  res.json(customers);
 };
