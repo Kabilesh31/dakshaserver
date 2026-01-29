@@ -25,9 +25,11 @@ const customerSchema = new mongoose.Schema({
   ref: "Route"
 }
 ,
-    lineNo : {
-      type : Number
-    },
+    lineNo: {
+  type: Number,
+  default: 0,
+}
+,
     creditDays : {
       type : Number
     },

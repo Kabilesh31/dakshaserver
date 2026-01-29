@@ -45,7 +45,7 @@ exports.getVehicles = async (req, res) => {
 // get single Vehicle
 
 exports.getVehicleById = async (req, res) => {
-  try {
+  try { 
     const vehicle = await Vehicle.findOne({
       _id: req.params.id,
       status: true,

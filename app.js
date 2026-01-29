@@ -22,6 +22,7 @@ const attendace = require("./routes/attendanceRoutes")
 const vehicle = require('./routes/vehicleRoutes');
 const routeZone = require("./routes/routeRoutes");
 const routeAssign = require("./routes/routeAssignmentRoutes");
+const deliveryRoutes = require("./routes/deliveryRoutes");
 
 app.use(express.json());
 
@@ -67,6 +68,7 @@ app.use("/api/attendance", attendace)
 app.use("/api/vehicle", vehicle)
 app.use("/api/route", routeZone);
 app.use("/api/route-assignment", routeAssign);
+app.use("/api/delivery", deliveryRoutes);
 
 app.post('/api/driveUpload', upload.single('file'), async (req, res) => {
     try {
