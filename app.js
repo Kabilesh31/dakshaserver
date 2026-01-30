@@ -8,7 +8,6 @@ const authRoutes = require("./routes/authRoutes");
 const globalErrorHandling = require("./controllers/errorController")
 const productData = require("./routes/productRoutes")
 const stockData = require("./routes/stockRoutes")
-const billData = require("./routes/billingRoutes")
 const multer = require('multer');
 const app = express();
 const details = require("./routes/detailsRoutes")
@@ -19,6 +18,10 @@ const staff = require("./routes/staffRoutes")
 const activity = require("./routes/activityRoutes")
 const attendace = require("./routes/attendanceRoutes")
 const staffAuthRoutes = require("./routes/staffAuthRoutes");
+const locationRoutes = require("./routes/locationRoutes");
+const billRoutes = require("./routes/billsRoutes");
+
+
 
 
 
@@ -62,7 +65,6 @@ app.use("/api/auth", authRoutes);
 app.use('/api/user', auth)
 app.use("/api/product", productData)
 app.use("/api/stock", stockData)
-app.use("/api/bill", billData)
 app.use("/api/detail", details)
 app.use("/api/customer", customer)
 app.use("/api/staff", staff)
@@ -73,7 +75,9 @@ app.use("/api/route", routeZone);
 app.use("/api/route-assignment", routeAssign);
 app.use("/api/delivery", deliveryRoutes);
 app.use("/api/staff/auth", staffAuthRoutes);
+app.use("/api/bills", billRoutes);
 
+app.use("/api/location", locationRoutes);
 
 app.post('/api/driveUpload', upload.single('file'), async (req, res) => {
     try {
