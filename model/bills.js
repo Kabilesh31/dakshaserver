@@ -11,19 +11,34 @@ const billSchema = new mongoose.Schema(
   {
     customerName: { type: String, required: true },
     customerId: { type: String, required: true },
-    orderedProducts: [orderedProductSchema],
-    totalAmt: { type: Number, required: true }, // note: totalAmt, not totalAmount
-    paidStatus: { type: Boolean, default: false },
-    paymentMethod: { type: String, enum: ["cod", "online"], default: null, },
+
+    orderedProducts: {
+      type: [orderedProductSchema],
+      required: true,
+    },
+
+    totalAmt: { type: Number, required: true },
+
+    paidStatus: {
+      type: Boolean,
+      default: false,
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: ["cod", "online", null],
+      default: null,
+    },
+
     orderStatus: {
       type: String,
       enum: ["pending", "approved", "out for delivery", "delivered"],
       default: "pending",
     },
+
     createdBy: { type: String, required: true },
   },
   { timestamps: true }
 );
 
-// Use this to avoid overwriting cached model
 module.exports = mongoose.models.Bill || mongoose.model("Bill", billSchema);
