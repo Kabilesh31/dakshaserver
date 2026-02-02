@@ -8,28 +8,30 @@ exports.createBill = async (req, res) => {
       customerId,
       orderedProducts,
       totalAmt,
-      paidStatus,
-      paymentMethod,
+      paidStatus = false,
+      paymentMethod = null,
       orderStatus,
       createdBy,
     } = req.body;
 
-    // Basic validation
-    if (!customerName || !customerId || !orderedProducts || !totalAmt || !createdBy) {
+    if (
+      !customerName ||
+      !customerId ||
+      !Array.isArray(orderedProducts) ||
+      orderedProducts.length === 0 ||
+      !totalAmt ||
+      !createdBy
+    ) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // 🔥 BUSINESS RULE ENFORCEMENT
-    // If paidStatus is false or null → paymentMethod must be null
-    if (!paidStatus) {
-      paidStatus = null;
+    // BUSINESS RULES
+    if (paidStatus === false) {
       paymentMethod = null;
     }
 
-    // If paidStatus is true → paymentMethod is required
     if (paidStatus === true) {
-      const validMethods = ["cod", "online"];
-      if (!paymentMethod || !validMethods.includes(paymentMethod)) {
+      if (!["cod", "online"].includes(paymentMethod)) {
         return res.status(400).json({
           message: "paymentMethod must be 'cod' or 'online' when paidStatus is true",
         });
@@ -56,6 +58,7 @@ exports.createBill = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 // 2️⃣ Get all bills (optional filter by customerId)
