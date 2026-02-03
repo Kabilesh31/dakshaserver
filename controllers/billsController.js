@@ -1,6 +1,12 @@
 const Bill = require("../model/bills");
 const Customer = require("../model/customerModel");
+const Staff = require("../model/staffModal");
+const mongoose = require("mongoose");
 
+
+// ============================
+// CREATE BILL
+// ============================
 exports.createBill = async (req, res) => {
   try {
     let {
@@ -10,10 +16,11 @@ exports.createBill = async (req, res) => {
       totalAmt,
       paidStatus = false,
       paymentMethod = null,
-      orderStatus,
+      orderStatus = "pending",
       createdBy,
     } = req.body;
 
+    // VALIDATION
     if (
       !customerName ||
       !customerId ||
@@ -25,20 +32,16 @@ exports.createBill = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // BUSINESS RULES
-    if (paidStatus === false) {
-      paymentMethod = null;
+    // PAYMENT RULE
+    if (!paidStatus) paymentMethod = null;
+    if (paidStatus && !["cod", "online"].includes(paymentMethod)) {
+      return res.status(400).json({
+        message: "Invalid payment method",
+      });
     }
 
-    if (paidStatus === true) {
-      if (!["cod", "online"].includes(paymentMethod)) {
-        return res.status(400).json({
-          message: "paymentMethod must be 'cod' or 'online' when paidStatus is true",
-        });
-      }
-    }
-
-    const newBill = await Bill.create({
+    // CREATE BILL (ONLY IDs STORED)
+    const bill = await Bill.create({
       customerName,
       customerId,
       orderedProducts,
@@ -49,32 +52,139 @@ exports.createBill = async (req, res) => {
       createdBy,
     });
 
+    // FETCH CUSTOMER
+    const customer = mongoose.Types.ObjectId.isValid(customerId)
+      ? await Customer.findById(customerId).select("name phone address").lean()
+      : null;
+
+    // FETCH STAFF
+    const staff = mongoose.Types.ObjectId.isValid(createdBy)
+      ? await Staff.findById(createdBy).select("name mobile type").lean()
+      : null;
+
+    // FINAL RESPONSE
     res.status(201).json({
       message: "Bill created successfully",
-      bill: newBill,
+      bill: {
+        ...bill.toObject(),
+      customerDetails: customer
+  ? {
+      name: customer.name || "",
+      mobile: customer.phone || customer.mobile || "",
+      address: customer.address || "",
+    }
+  : null,
+
+        staffDetails: staff
+          ? {
+              name: staff.name,
+              mobile: staff.mobile,
+              type: staff.type,
+            }
+          : null,
+      },
     });
   } catch (error) {
-    console.error("Create Bill error:", error);
-    res.status(500).json({ message: error.message });
+    console.error("Create Bill Error:", error);
+    res.status(500).json({ message: "Failed to create bill" });
   }
 };
 
 
-
-// 2️⃣ Get all bills (optional filter by customerId)
 exports.getBills = async (req, res) => {
   try {
-    const { customerId } = req.query;
+    const bills = await Bill.find().sort({ createdAt: -1 }).lean();
 
-    const filter = customerId ? { customerId } : {};
-    const bills = await Bill.find(filter).sort({ createdAt: -1 });
+    const result = await Promise.all(
+      bills.map(async (bill) => {
+        const customer = mongoose.Types.ObjectId.isValid(bill.customerId)
+          ? await Customer.findById(bill.customerId).lean()
+          : null;
 
-    res.status(200).json({ bills });
+        const staff = mongoose.Types.ObjectId.isValid(bill.createdBy)
+          ? await Staff.findById(bill.createdBy)
+              .select("name mobile type")
+              .lean()
+          : null;
+
+        return {
+          ...bill,
+
+          customerDetails: customer
+            ? {
+                name: customer.name || "",
+                mobile: customer.phone || customer.mobile || "",
+                address: customer.address || "",
+              }
+            : null,
+
+          staffDetails: staff
+            ? {
+                name: staff.name || "",
+                mobile: staff.mobile || "",
+                type: staff.type || "",
+              }
+            : null,
+        };
+      })
+    );
+
+    res.status(200).json({
+      message: "Bills fetched successfully",
+      bills: result,
+    });
   } catch (error) {
-    console.error("Get Bills error:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Get Bills Error:", error);
+    res.status(500).json({ message: "Failed to fetch bills" });
   }
 };
+
+
+exports.getBillById = async (req, res) => {
+  try {
+    const { billId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(billId)) {
+      console.error("Invalid billId:", billId);
+      return res.status(400).json({ message: "Invalid bill ID" });
+    }
+
+    const bill = await Bill.findById(billId).lean();
+    if (!bill) return res.status(404).json({ message: "Bill not found" });
+
+    let customer = null;
+    let staff = null;
+
+    if (bill.customerId && mongoose.Types.ObjectId.isValid(bill.customerId)) {
+      customer = await Customer.findById(bill.customerId)
+        .select("name mobile address")
+        .lean();
+    }
+
+    if (bill.createdBy && mongoose.Types.ObjectId.isValid(bill.createdBy)) {
+      staff = await Staff.findById(bill.createdBy)
+        .select("name mobile type")
+        .lean();
+    }
+
+    res.status(200).json({
+      message: "Bill fetched successfully",
+      bill: {
+        ...bill,
+        customerDetails: customer
+          ? { name: customer.name, mobile: customer.mobile || "-", address: customer.address || "-" }
+          : { name: bill.customerName, mobile: "-", address: "-" },
+        staffDetails: staff
+          ? { name: staff.name, mobile: staff.mobile || "-", type: staff.type || "-" }
+          : { name: "Unassigned", mobile: "-", type: "-" },
+      },
+    });
+  } catch (error) {
+    console.error("getBillById error:", error); // ✅ detailed logging
+    res.status(500).json({ message: "Failed to fetch bill", error: error.message });
+  }
+};
+
 
 // 3️⃣ Change order status
 exports.changeOrderStatus = async (req, res) => {
