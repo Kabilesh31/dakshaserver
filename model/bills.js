@@ -10,7 +10,7 @@ const orderedProductSchema = new mongoose.Schema({
 const billSchema = new mongoose.Schema(
   {
     customerName: { type: String, required: true },
-    customerId: { type: String, required: true },
+    customerId: { type: String, required: true }, // store ID only
 
     orderedProducts: {
       type: [orderedProductSchema],
@@ -36,7 +36,7 @@ const billSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    createdBy: { type: String, required: true },
+    createdBy: { type: String, required: true }, // staffId
   },
   { timestamps: true }
 );

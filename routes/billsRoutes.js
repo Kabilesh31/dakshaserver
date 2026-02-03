@@ -5,6 +5,7 @@ const {
   createBill,
   getBills,
   changeOrderStatus,
+    getBillById,   
   updatePaymentStatus,
 } = require("../controllers/billsController");
 
@@ -14,6 +15,7 @@ router.post("/", createBill);
 // GET all bills (optionally filtered by customerId)
 router.get("/", getBills);
 
+router.get("/:billId", getBillById);
 // PATCH change order status
 router.patch("/:billId/status", changeOrderStatus);
 
