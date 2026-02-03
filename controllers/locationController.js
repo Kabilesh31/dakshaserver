@@ -1,6 +1,7 @@
 const Location = require("../model/location");
+const { saveLocation } = require("../services/location.service");
 
-exports.createLocation = async (req, res) => {
+exports.createLocation2 = async (req, res) => {
   try {
     const {
       staffId,
@@ -39,6 +40,23 @@ exports.createLocation = async (req, res) => {
     console.error("Location POST error:", error);
     res.status(500).json({
       message: "Internal server error",
+    });
+  }
+};
+
+exports.createLocation = async (req, res) => {
+  try {
+    const location = await saveLocation(req.body);
+
+    res.status(201).json({
+      message: "Location saved successfully",
+      location,
+    });
+  } catch (error) {
+    console.error("Location POST error:", error.message);
+
+    res.status(400).json({
+      message: error.message || "Internal server error",
     });
   }
 };
