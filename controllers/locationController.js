@@ -1,6 +1,7 @@
 const Location = require("../model/location");
+const { saveLocation } = require("../services/location.service");
 
-exports.createLocation = async (req, res) => {
+exports.createLocation2 = async (req, res) => {
   try {
     const {
       staffId,

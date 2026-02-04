@@ -39,7 +39,7 @@ const allowedOrigins = [
     "http://localhost:3000", // Web
     "https://retailpulse2.netlify.app",
     "https://kochai.netlify.app",
-    "http://192.168.0.100:3000"
+    "http://192.168.56.1:3000"
     // "http://localhost:8081", // React Native
     // "http://192.168.0.107:8081", // Ensure this is the correct IP and port
     // "http://192.168.3.176:8081"
