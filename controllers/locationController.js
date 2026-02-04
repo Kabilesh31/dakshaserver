@@ -43,20 +43,68 @@ exports.createLocation2 = async (req, res) => {
     });
   }
 };
-
-exports.createLocation = async (req, res) => {
+// GET latest location of a staff
+exports.getLatestLocationByStaff = async (req, res) => {
   try {
-    const location = await saveLocation(req.body);
+    const { staffId } = req.params;
 
-    res.status(201).json({
-      message: "Location saved successfully",
-      location,
+    const latestLocation = await Location.findOne({ staffId })
+      .sort({ timeStamp: -1 }) // latest first
+      .lean();
+
+    if (!latestLocation) {
+      return res.status(404).json({
+        message: "No location found for this staff",
+      });
+    }
+
+    res.status(200).json({
+      staffId,
+      lat: latestLocation.latitude,
+      lng: latestLocation.longitude,
+      batteryLevel: latestLocation.batteryLevel,
+      gpsStatus: latestLocation.gpsStatus,
+      networkStatus: latestLocation.networkStatus,
+      updatedAt: latestLocation.timeStamp,
     });
   } catch (error) {
-    console.error("Location POST error:", error.message);
+    console.error("Get location error:", error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+exports.getLatestStaffLocation = async (req, res) => {
+  try {
+    const { staffId } = req.params;
 
-    res.status(400).json({
-      message: error.message || "Internal server error",
+    const location = await Location.findOne({ staffId })
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    if (!location) {
+      return res.status(404).json({
+        status: "error",
+        message: "No live location found for this staff",
+      });
+    }
+
+    return res.status(200).json({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      batteryLevel: location.batteryLevel,
+      gpsStatus: location.gpsStatus,
+      networkStatus: location.networkStatus,
+      isOnline: location.isOnline,
+      updatedAt: location.updatedAt,
+    });
+
+  } catch (error) {
+    console.error("❌ LOCATION FETCH ERROR:", error);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
     });
   }
 };

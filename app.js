@@ -20,6 +20,9 @@ const attendace = require("./routes/attendanceRoutes")
 const staffAuthRoutes = require("./routes/staffAuthRoutes");
 const locationRoutes = require("./routes/locationRoutes");
 const billRoutes = require("./routes/billsRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const endOfDayCron = require("./cron/endOfDayCron");
+
 
 
 
@@ -76,6 +79,7 @@ app.use("/api/route-assignment", routeAssign);
 app.use("/api/delivery", deliveryRoutes);
 app.use("/api/staff/auth", staffAuthRoutes);
 app.use("/api/bills", billRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use("/api/location", locationRoutes);
 
@@ -143,12 +147,20 @@ app.get('/api/driveFiles', async (req, res) => {
 
 // Connect to MongoDB
 mongoose.connect(mongoString)
-    .then(() => console.log('Database Connected'))
-    .catch((error) => console.log('Database Not Connected:', error));
+  .then(() => {
+    console.log("Database Connected");
 
-    app.all("*", (req, res, next) => {
-        next(new AppError(`Can't find ${req.originalUrl}`), 404)
-    })
-    app.use(globalErrorHandling)
+    // ✅ Start cron only after DB is ready
+    require("./cron/endOfDayCron");
+  })
+  .catch((error) => {
+    console.log("Database Not Connected:", error);
+  });
+
+app.all("*", (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl}`), 404);
+});
+
+app.use(globalErrorHandling);
 
 module.exports = app;

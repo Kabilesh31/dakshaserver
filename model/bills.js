@@ -10,7 +10,11 @@ const orderedProductSchema = new mongoose.Schema({
 const billSchema = new mongoose.Schema(
   {
     customerName: { type: String, required: true },
-    customerId: { type: String, required: true }, // store ID only
+     customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true,
+    },
 
     orderedProducts: {
       type: [orderedProductSchema],

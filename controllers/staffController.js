@@ -2,6 +2,8 @@ const Staff = require("../model/staffModal");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { autoCheckIn, autoCheckOut } = require("../services/attendanceService");
+
 
 // create employee
 exports.createStaff = async (req, res) => {
@@ -24,6 +26,7 @@ exports.createStaff = async (req, res) => {
       createdBy: req.body.createdBy,
       img: imageUrl,
       dutyStatus: req.body.dutyStatus || "active",
+      documents: [],
     });
 
     res.status(201).json({
@@ -218,37 +221,50 @@ exports.uploadStaffDocument = async (req, res) => {
   }
 };
 
-// change duty status - active / inactive
 exports.changeDutyStatus = async (req, res) => {
   try {
     const { dutyStatus } = req.body;
 
-    // validation
     if (!["active", "inactive"].includes(dutyStatus)) {
-      return res.status(400).json({
-        message: "Invalid dutyStatus. Allowed values: active, inactive",
-      });
+      return res.status(400).json({ message: "Invalid duty status" });
     }
 
-    const staff = await Staff.findByIdAndUpdate(
-      req.params.id,
-      { dutyStatus },
-      { new: true }
-    );
+    const staff = await Staff.findById(req.params.id);
 
     if (!staff) {
       return res.status(404).json({ message: "Staff not found" });
     }
 
-    res.status(200).json({
+    if (staff.dutyStatus === dutyStatus) {
+      return res.json({
+        message: "Duty status already updated",
+        data: staff,
+      });
+    }
+
+    // 🛡️ FIX INVALID documents FIELD
+    if (!Array.isArray(staff.documents)) {
+      staff.documents = [];
+    }
+
+    if (dutyStatus === "active") {
+      await autoCheckIn(staff._id, staff.name);
+    }
+
+    if (dutyStatus === "inactive") {
+      await autoCheckOut(staff._id);
+    }
+
+    staff.dutyStatus = dutyStatus;
+    await staff.save();
+
+    res.json({
       message: "Duty status updated successfully",
       data: staff,
     });
+
   } catch (error) {
-    console.error("Change Duty Status Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
-
-
 
