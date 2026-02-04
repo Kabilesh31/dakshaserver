@@ -108,3 +108,20 @@ exports.getLatestStaffLocation = async (req, res) => {
     });
   }
 };
+
+exports.createLocation = async (req, res) => {
+  try {
+    const location = await saveLocation(req.body);
+
+    res.status(201).json({
+      message: "Location saved successfully",
+      location,
+    });
+  } catch (error) {
+    console.error("Location POST error:", error.message);
+
+    res.status(400).json({
+      message: error.message || "Internal server error",
+    });
+  }
+};
