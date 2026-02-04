@@ -2,6 +2,7 @@ const Bill = require("../model/bills");
 const Customer = require("../model/customerModel");
 const Staff = require("../model/staffModal");
 const mongoose = require("mongoose");
+const Notification = require("../model/Notification");
 
 
 // ============================
@@ -51,6 +52,15 @@ exports.createBill = async (req, res) => {
       orderStatus,
       createdBy,
     });
+    await Notification.create({
+      user: createdBy, // staff/user who created the bill
+      title: "New Bill Created",
+      message: `Bill #${bill._id.toString().slice(-6)} created for ${customerName}`,
+      type: "bill",
+      referenceId: bill._id,
+      seen: false,
+    });
+
 
     // FETCH CUSTOMER
     const customer = mongoose.Types.ObjectId.isValid(customerId)

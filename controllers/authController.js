@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken")
 const AppError = require("../utils/appError")
 const sendEmail = require("../utils/sendEmail")
 const crypto = require("crypto")
-
+const { promisify } = require("util");
 
 const signInToken = id => {
     return jwt.sign({id},process.env.JWT_SECRET,{expiresIn: process.env.JWT_SECRET_EXPIRESIN})

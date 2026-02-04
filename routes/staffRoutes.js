@@ -5,6 +5,7 @@ const staffController = require("../controllers/staffController");
 
 // ✅ NO auth middleware here
 router.get("/", staffController.getAllStaff);
+
 router.get("/:id", staffController.getStaffById);
 router.post("/", upload.single("img"), staffController.createStaff);
 router.put("/:id", upload.single("img"), staffController.updateStaff);

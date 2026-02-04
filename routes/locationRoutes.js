@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { createLocation } = require("../controllers/locationController");
 
-// No auth middleware needed
+const {
+  createLocation,
+  getLatestStaffLocation,
+} = require("../controllers/locationController");
+
 router.post("/", createLocation);
-
+router.get("/latest/:staffId", getLatestStaffLocation);
 module.exports = router;
