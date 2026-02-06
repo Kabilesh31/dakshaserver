@@ -6,7 +6,9 @@ const {
   assignRoute,
   getAssignmentsByDate,
   getStaffRoutesToday,
-  completeRoute,  deleteAssignment
+  completeRoute,  
+  deleteAssignment,
+  getCustomerByAssignedStaff
 } = require("../controllers/RouteAssignmentController")
 
 // assign route to staff
@@ -20,5 +22,5 @@ router.get("/staff/:staffId", getStaffRoutesToday)
 
 // mark route completed
 router.put("/:id/complete", completeRoute)
-
+router.get("/:staffId/assignedCustomer", getCustomerByAssignedStaff)
 module.exports = router
