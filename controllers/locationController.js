@@ -125,3 +125,37 @@ exports.createLocation = async (req, res) => {
     });
   }
 };
+exports.getLatestStaffLocation = async (req, res) => {
+  try {
+    const { staffId } = req.params;
+
+    const location = await Location.findOne({ staffId })
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    if (!location) {
+      return res.status(404).json({
+        status: "error",
+        message: "No live location found for this staff",
+      });
+    }
+
+    return res.status(200).json({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      batteryLevel: location.batteryLevel,
+      gpsStatus: location.gpsStatus,
+      networkStatus: location.networkStatus,
+      isOnline: location.isOnline,
+      updatedAt: location.updatedAt,
+    });
+
+  } catch (error) {
+    console.error("❌ LOCATION FETCH ERROR:", error);
+
+    return res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
