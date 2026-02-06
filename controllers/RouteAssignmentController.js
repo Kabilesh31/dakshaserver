@@ -1,6 +1,7 @@
 // controllers/routeAssignmentController.js
 const RouteAssignment = require("../model/routeAssignmentModal")
-
+const Customer = require("../model/customerModel")
+const mongoose = require("mongoose");
 // Assign Route to Staff
 exports.assignRoute = async (req, res) => {
   try {
@@ -120,3 +121,66 @@ exports.completeRoute = async (req, res) => {
     })
   }
 }
+
+
+exports.getCustomerByAssignedStaff = async (req, res) => {
+  try {
+    const { staffId } = req.params;
+    const { date } = req.query;
+
+    // ✅ Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(staffId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid staffId"
+      });
+    }
+
+    const staffObjectId = new mongoose.Types.ObjectId(staffId);
+
+    // 1️⃣ Build route query
+    const routeQuery = { staffId: staffObjectId };
+    if (date) routeQuery.date = date;
+
+    // 2️⃣ Find assignments
+    const assignments = await RouteAssignment
+      .find(routeQuery)
+      .select("routeId");
+
+    if (!assignments.length) {
+      return res.status(200).json({
+        success: false,
+        message: date
+          ? "No routes assigned for this day"
+          : "No routes assigned till now",
+        customers: []
+      });
+    }
+
+    // 3️⃣ Extract routeIds (already ObjectId ✅)
+    const routeIds = assignments.map(a => a.routeId);
+
+    // 4️⃣ Find customers
+    const customers = await Customer.find({
+      routeId: { $in: routeIds },
+      isDeleted: false,
+      status: true
+    })
+      .populate("routeId", "routeName")
+      .sort({ lineNo: 1 });
+
+    return res.status(200).json({
+      success: true,
+      message: "Customers fetched successfully",
+      totalCustomers: customers.length,
+      customers
+    });
+
+  } catch (error) {
+    console.error("Assigned Customers Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+};
