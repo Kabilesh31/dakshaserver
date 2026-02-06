@@ -152,3 +152,24 @@ exports.getCustomers = async (req, res) => {
 
   res.json(customers);
 };
+exports.getCustomersByRoute = async (req, res) => {
+  try {
+    const { routeId } = req.params;
+
+    let customers = await Customer.find({
+      routeId,
+      isDeleted: false,
+    }).sort({ lineNo: 1 });
+
+    // Filter invalid coordinates
+    customers = customers.filter(c => {
+      const lat = Number(c.geoLocation?.lat);
+      const lng = Number(c.geoLocation?.long);
+      return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+    });
+
+    res.status(200).json(customers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
