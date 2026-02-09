@@ -45,10 +45,29 @@ const customerSchema = new mongoose.Schema({
   },
 
   /** ✅ NEW FIELD */
+   orderPending: {
+    type: Boolean,
+    default: false
+  },
+
   paymentPending: {
     type: Boolean,
     default: false
   },
+
+  paymentPendingAmount: {
+    type: Number,
+    default: 0
+  },
+  gst: {
+    type: String, // GSTIN format (recommended)
+    trim: true
+  },
+
+  lastOrderDate: {
+    type: Date
+  },
+
 
   isDeleted: {
     type: Boolean,

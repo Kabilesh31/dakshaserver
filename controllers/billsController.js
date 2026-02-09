@@ -5,9 +5,8 @@ const mongoose = require("mongoose");
 const Notification = require("../model/Notification");
 
 
-// ============================
-// CREATE BILL
-// ============================
+
+
 exports.createBill = async (req, res) => {
   try {
     let {
@@ -19,6 +18,7 @@ exports.createBill = async (req, res) => {
       paymentMethod = null,
       orderStatus = "pending",
       createdBy,
+       gst, 
     } = req.body;
 
     // VALIDATION
@@ -61,6 +61,30 @@ exports.createBill = async (req, res) => {
       seen: false,
     });
 
+// ============================
+// UPDATE CUSTOMER STATUS
+// ============================
+const customerUpdate = {
+  orderPending: true,
+  paymentPending: !paidStatus,
+  lastOrderDate: new Date(),
+};
+
+// payment pending amount logic
+if (paidStatus) {
+  customerUpdate.paymentPendingAmount = 0;
+} else {
+  customerUpdate.$inc = { paymentPendingAmount: totalAmt };
+}
+
+// optional GST update
+if (gst) {
+  customerUpdate.gst = gst;
+}
+
+await Customer.findByIdAndUpdate(customerId, customerUpdate, {
+  new: true,
+});
 
     // FETCH CUSTOMER
     const customer = mongoose.Types.ObjectId.isValid(customerId)
@@ -251,10 +275,14 @@ exports.updatePaymentStatus = async (req, res) => {
 
     // 3️⃣ Update customer paymentPending → false
     await Customer.findByIdAndUpdate(
-      bill.customerId,
-      { paymentPending: false },
-      { new: true }
-    );
+  bill.customerId,
+  {
+    paymentPending: false,
+    paymentPendingAmount: 0,
+  },
+  { new: true }
+);
+
 
     res.status(200).json({
       message: "Payment confirmed and customer payment cleared",
