@@ -220,7 +220,7 @@ exports.getBillById = async (req, res) => {
 };
 
 
-// 3️⃣ Change order status
+// Change order status
 exports.changeOrderStatus = async (req, res) => {
   try {
     const { billId } = req.params;
@@ -243,53 +243,137 @@ exports.changeOrderStatus = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-exports.updatePaymentStatus = async (req, res) => {
-  try {
-    const { billId } = req.params;
-    const { paidStatus, paymentMethod } = req.body;
 
-    // Validate
-    if (paidStatus !== true) {
-      return res.status(400).json({
-        message: "This API is only for confirming payment (paidStatus = true)",
-      });
+// exports.updatePaymentStatus = async (req, res) => {
+//   try {
+//     const { billId } = req.params;
+//     const { paidStatus, paymentMethod } = req.body;
+
+//     // Validate
+//     if (paidStatus !== true) {
+//       return res.status(400).json({
+//         message: "This API is only for confirming payment (paidStatus = true)",
+//       });
+//     }
+
+//     const validMethods = ["cod", "online"];
+//     if (!paymentMethod || !validMethods.includes(paymentMethod)) {
+//       return res.status(400).json({
+//         message: "paymentMethod must be 'cod' or 'online'",
+//       });
+//     }
+
+//     // 1️Find bill
+//     const bill = await Bill.findById(billId);
+//     if (!bill) {
+//       return res.status(404).json({ message: "Bill not found" });
+//     }
+
+//     // Update bill
+//     bill.paidStatus = true;
+//     bill.paymentMethod = paymentMethod;
+//     await bill.save();
+
+//     // Update customer paymentPending → false
+//     await Customer.findByIdAndUpdate(
+//     bill.customerId,
+//     {
+//       paymentPending: false,
+//       paymentPendingAmount: 0,
+//     },
+//     { new: true }
+//   );
+
+
+//     res.status(200).json({
+//       message: "Payment confirmed and customer payment cleared",
+//       bill,
+//     });
+//   } catch (error) {
+//     console.error("Update Payment Status error:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+exports.markHasDelivered = async(req, res) => {
+  const {id} = req.params;
+  try{
+    const bill = await Bill.findOne({
+      customerId : id,
+      orderStatus : "pending"
+    })
+
+    if(!bill) {
+      return res.status(404).json({
+        success: false,
+        message: "No pending bill found for this customer"
+      })
     }
 
-    const validMethods = ["cod", "online"];
-    if (!paymentMethod || !validMethods.includes(paymentMethod)) {
-      return res.status(400).json({
-        message: "paymentMethod must be 'cod' or 'online'",
-      });
-    }
+    bill.orderStatus = "delivered"
+    bill.deliveredAt = new Date();
 
-    // 1️⃣ Find bill
-    const bill = await Bill.findById(billId);
-    if (!bill) {
-      return res.status(404).json({ message: "Bill not found" });
-    }
-
-    // 2️⃣ Update bill
-    bill.paidStatus = true;
-    bill.paymentMethod = paymentMethod;
-    await bill.save();
-
-    // 3️⃣ Update customer paymentPending → false
+    await bill.save()
+    
+    // orderpending change
+    
     await Customer.findByIdAndUpdate(
-  bill.customerId,
-  {
-    paymentPending: false,
-    paymentPendingAmount: 0,
-  },
-  { new: true }
-);
-
+      id,
+      {orderPending : false},
+      {new : true}
+    )
 
     res.status(200).json({
-      message: "Payment confirmed and customer payment cleared",
-      bill,
+      success: true,
+      message: "Order marked as delivered",
+      data: bill
+    })
+  }catch(err){
+    console.error(err); 
+    res.status(500).json({
+      success: false,
+      message: "Server error"
     });
+  }
+}
+
+
+exports.updatePaymentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {paymentMethod } = req.body;
+
+    const bill = await Bill.findOne({
+      customerId : id,
+      paidStatus : false
+    })
+
+    if(!bill) {
+      return res.status(404).json({
+        success: false,
+        message: "No pending bill found for this customer"
+      })
+    }
+
+    bill.paidStatus = true;
+    bill.paymentMethod = paymentMethod
+    await bill.save()
+
+    await Customer.findByIdAndUpdate(
+      id, 
+      { paymentPending : false, paymentPendingAmount : 0},
+      { new : true}
+    )
+
+    res.status(200).json({
+      success: true,
+      message: "Payment Marked Successfull",
+      data: bill
+    })
+  
   } catch (error) {
     console.error("Update Payment Status error:", error);
     res.status(500).json({ message: error.message });
   }
 };
+

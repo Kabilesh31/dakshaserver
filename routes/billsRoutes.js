@@ -7,6 +7,7 @@ const {
   changeOrderStatus,
     getBillById,   
   updatePaymentStatus,
+  markHasDelivered
 } = require("../controllers/billsController");
 
 // POST create new bill
@@ -18,8 +19,8 @@ router.get("/", getBills);
 router.get("/:billId", getBillById);
 // PATCH change order status
 router.patch("/:billId/status", changeOrderStatus);
+router.put("/delivered/:id", markHasDelivered );
 
-
-router.patch("/:billId/payment", updatePaymentStatus);
+router.patch("/:id/payment", updatePaymentStatus);
 
 module.exports = router;
