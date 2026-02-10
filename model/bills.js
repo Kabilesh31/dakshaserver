@@ -30,7 +30,7 @@ const billSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["cod", "online", null],
+      enum: ["cod", "online", "card"],
       default: null,
     },
 
@@ -38,6 +38,10 @@ const billSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "approved", "out for delivery", "delivered"],
       default: "pending",
+    },
+    deliveredAt : {
+      type : Date, 
+      default : null
     },
 
     createdBy: { type: String, required: true }, // staffId
