@@ -12,14 +12,14 @@ cron.schedule(
     const today = getToday();
 
     try {
+      // Only check active staff
       const activeStaff = await Staff.find(
         { dutyStatus: "active" },
-        { _id: 1 } // only get ID (important)
+        { _id: 1 }
       );
 
       for (const staff of activeStaff) {
-        // ✅ Auto checkout attendance
-        await Attendance.updateOne(
+        const result = await Attendance.updateOne(
           {
             staffId: staff._id,
             date: today,
@@ -33,11 +33,9 @@ cron.schedule(
           }
         );
 
-        // ✅ Direct DB update (NO validation)
-        await Staff.updateOne(
-          { _id: staff._id },
-          { $set: { dutyStatus: "inactive" } }
-        );
+        if (result.matchedCount > 0) {
+          console.log(`✅ Auto checkout done for staffId: ${staff._id}`);
+        }
       }
 
       console.log("✅ End-of-day auto checkout completed");

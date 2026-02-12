@@ -30,19 +30,22 @@ const billSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: ["Cash", "UPI", "CARD"],
+      enum: ["cod", "online", null],
       default: null,
     },
 
-    orderStatus: {
-      type: String,
-      enum: ["pending", "approved", "out for delivery", "delivered"],
-      default: "pending",
-    },
-    deliveredAt : {
-      type : Date, 
-      default : null
-    },
+ orderStatus: {
+  type: String,
+  enum: [
+    "pending",
+    "approved",
+    "rejected",          
+    "out for delivery",  
+    "delivered",
+  ],
+  default: "pending",
+},
+
 
     createdBy: { type: String, required: true }, // staffId
   },
