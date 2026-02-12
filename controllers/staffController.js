@@ -225,32 +225,23 @@ exports.changeDutyStatus = async (req, res) => {
   try {
     const { dutyStatus } = req.body;
 
-    // Validate status
     if (!["active", "inactive"].includes(dutyStatus)) {
       return res.status(400).json({ message: "Invalid duty status" });
     }
 
-    const staff = await Staff.findById(req.params.id);
+    const updatedStaff = await Staff.findByIdAndUpdate(
+      req.params.id,
+      { $set: { dutyStatus } },
+      { new: true } // return updated document
+    );
 
-    if (!staff) {
+    if (!updatedStaff) {
       return res.status(404).json({ message: "Staff not found" });
     }
 
-    // If already same status
-    if (staff.dutyStatus === dutyStatus) {
-      return res.status(200).json({
-        message: "Duty status already updated",
-        data: staff,
-      });
-    }
-
-    // Just update dutyStatus only
-    staff.dutyStatus = dutyStatus;
-    await staff.save();
-
     res.status(200).json({
       message: "Duty status updated successfully",
-      data: staff,
+      data: updatedStaff,
     });
 
   } catch (error) {
