@@ -2,7 +2,7 @@ const Staff = require("../model/staffModal");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { autoCheckIn, autoCheckOut } = require("../services/attendanceService");
+
 
 
 // create employee
@@ -225,6 +225,7 @@ exports.changeDutyStatus = async (req, res) => {
   try {
     const { dutyStatus } = req.body;
 
+    // Validate status
     if (!["active", "inactive"].includes(dutyStatus)) {
       return res.status(400).json({ message: "Invalid duty status" });
     }
@@ -235,36 +236,25 @@ exports.changeDutyStatus = async (req, res) => {
       return res.status(404).json({ message: "Staff not found" });
     }
 
+    // If already same status
     if (staff.dutyStatus === dutyStatus) {
-      return res.json({
+      return res.status(200).json({
         message: "Duty status already updated",
         data: staff,
       });
     }
 
-    // 🛡️ FIX INVALID documents FIELD
-    if (!Array.isArray(staff.documents)) {
-      staff.documents = [];
-    }
-
-    if (dutyStatus === "active") {
-      await autoCheckIn(staff._id, staff.name);
-    }
-
-    if (dutyStatus === "inactive") {
-      await autoCheckOut(staff._id);
-    }
-
+    // Just update dutyStatus only
     staff.dutyStatus = dutyStatus;
     await staff.save();
 
-    res.json({
+    res.status(200).json({
       message: "Duty status updated successfully",
       data: staff,
     });
 
   } catch (error) {
+    console.error("Change Duty Status Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
-

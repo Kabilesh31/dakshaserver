@@ -220,13 +220,19 @@ exports.getBillById = async (req, res) => {
 };
 
 
-// Change order status
 exports.changeOrderStatus = async (req, res) => {
   try {
     const { billId } = req.params;
     const { orderStatus } = req.body;
 
-    const validStatuses = ["pending", "approved", "out for delivery", "delivered"];
+    const validStatuses = [
+      "pending",
+      "approved",
+      "out for delivery",
+      "delivered",
+      "rejected",   // ✅ added
+    ];
+
     if (!orderStatus || !validStatuses.includes(orderStatus)) {
       return res.status(400).json({ message: "Invalid order status" });
     }
@@ -243,6 +249,7 @@ exports.changeOrderStatus = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 // exports.updatePaymentStatus = async (req, res) => {
 //   try {
