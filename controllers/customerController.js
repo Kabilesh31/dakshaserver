@@ -173,3 +173,20 @@ exports.getCustomersByRoute = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getCustomerByStaffId = async (req, res) => {
+  try {
+    const customer = await Customer.findOne({
+      createdBy: req.params.id,
+      isDeleted: false,
+    });
+
+    if (!customer) {
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    res.status(200).json(customer);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
