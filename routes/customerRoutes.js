@@ -14,5 +14,6 @@ router.get("/:id", customerController.getCustomerById);
 // Other routes
 router.post("/", upload.single("img"), customerController.createCustomer);
 router.get("/", customerController.getCustomers);
+router.get("/getCustomerbyStaff/:id", customerController.getCustomerByStaffId)
 
 module.exports = router;
