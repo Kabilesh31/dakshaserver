@@ -1,9 +1,16 @@
 const { saveLocation } = require("./services/location.service");
 
+let ioInstance; // 🔥 store io globally
+
 module.exports = (io) => {
+  ioInstance = io; // save instance
+
   io.on("connection", (socket) => {
     console.log("Socket connected:", socket.id);
 
+    // ======================
+    // Staff location updates
+    // ======================
     socket.on("staffLocationUpdate", async (data) => {
       try {
         const location = await saveLocation(data);
@@ -24,3 +31,16 @@ module.exports = (io) => {
     });
   });
 };
+
+// 🔥 NEW FUNCTION FOR NOTIFICATIONS
+module.exports.sendNotification = (notification) => {
+  if (!ioInstance) {
+    console.log("❌ Socket not initialized");
+    return;
+  }
+
+  console.log("🔥 Emitting notification:", notification._id);
+
+  ioInstance.emit("newNotification", notification);
+};
+

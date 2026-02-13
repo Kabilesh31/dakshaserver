@@ -3,6 +3,7 @@ const Customer = require("../model/customerModel");
 const Staff = require("../model/staffModal");
 const mongoose = require("mongoose");
 const Notification = require("../model/Notification");
+const socket = require("../socket");
 
 
 
@@ -41,25 +42,32 @@ exports.createBill = async (req, res) => {
       });
     }
 
-    // CREATE BILL (ONLY IDs STORED)
-    const bill = await Bill.create({
-      customerName,
-      customerId,
-      orderedProducts,
-      totalAmt,
-      paidStatus,
-      paymentMethod,
-      orderStatus,
-      createdBy,
-    });
-    await Notification.create({
-      user: createdBy, // staff/user who created the bill
-      title: "New Bill Created",
-      message: `Bill #${bill._id.toString().slice(-6)} created for ${customerName}`,
-      type: "bill",
-      referenceId: bill._id,
-      seen: false,
-    });
+// CREATE BILL
+const bill = await Bill.create({
+  customerName,
+  customerId,
+  orderedProducts,
+  totalAmt,
+  paidStatus,
+  paymentMethod,
+  orderStatus,
+  createdBy,
+});
+
+// CREATE NOTIFICATION
+const notification = await Notification.create({
+  user: createdBy,
+  title: "New Bill Created",
+  message: `Bill #${bill._id.toString().slice(-6)} created for ${customerName}`,
+  type: "bill",
+  referenceId: bill._id,
+  seen: false,
+});
+
+socket.sendNotification({
+  ...notification.toObject(),
+  timeAgo: "just now",
+});
 
 // ============================
 // UPDATE CUSTOMER STATUS

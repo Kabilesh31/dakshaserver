@@ -7,13 +7,15 @@ const customerSchema = new mongoose.Schema({
     minLength: 3
   },
   phone: {
-    type: Number,
-    required: true  
-  }, 
-  phone2: {
-    type: Number,
-    required: true  
-  },
+  type: String,
+  required: true,
+  trim: true
+},
+
+phone2: {
+  type: String,
+  trim: true
+},
   address: {
     type: String,
     required: true
@@ -60,7 +62,7 @@ const customerSchema = new mongoose.Schema({
     default: 0
   },
   gst: {
-    type: String, // GSTIN format (recommended)
+    type: String, 
     trim: true
   },
 
