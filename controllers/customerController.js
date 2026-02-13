@@ -176,7 +176,7 @@ exports.getCustomersByRoute = async (req, res) => {
 
 exports.getCustomerByStaffId = async (req, res) => {
   try {
-    const customer = await Customer.findOne({
+    const customer = await Customer.find({
       createdBy: req.params.id,
       isDeleted: false,
     });
