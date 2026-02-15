@@ -5,9 +5,6 @@ const mongoose = require("mongoose");
 const Notification = require("../model/Notification");
 const socket = require("../socket");
 
-
-
-
 exports.createBill = async (req, res) => {
   try {
     let {
@@ -54,45 +51,42 @@ const bill = await Bill.create({
   createdBy,
 });
 
-// CREATE NOTIFICATION
-const notification = await Notification.create({
-  user: createdBy,
-  title: "New Bill Created",
-  message: `Bill #${bill._id.toString().slice(-6)} created for ${customerName}`,
-  type: "bill",
-  referenceId: bill._id,
-  seen: false,
-});
+    // CREATE NOTIFICATION
+    const notification = await Notification.create({
+      user: createdBy,
+      title: "New Bill Created",
+      message: `Bill #${bill._id.toString().slice(-6)} created for ${customerName}`,
+      type: "bill",
+      referenceId: bill._id,
+      seen: false,
+    });
 
-socket.sendNotification({
-  ...notification.toObject(),
-  timeAgo: "just now",
-});
+    socket.sendNotification({
+      ...notification.toObject(),
+      timeAgo: "just now",
+    });
 
-// ============================
-// UPDATE CUSTOMER STATUS
-// ============================
-const customerUpdate = {
-  orderPending: true,
-  paymentPending: !paidStatus,
-  lastOrderDate: new Date(),
-};
+    const customerUpdate = {
+      orderPending: true,
+      paymentPending: !paidStatus,
+      lastOrderDate: new Date(),
+    };
 
-// payment pending amount logic
-if (paidStatus) {
-  customerUpdate.paymentPendingAmount = 0;
-} else {
-  customerUpdate.$inc = { paymentPendingAmount: totalAmt };
-}
+    // payment pending amount logic
+    if (paidStatus) {
+      customerUpdate.paymentPendingAmount = 0;
+    } else {
+      customerUpdate.$inc = { paymentPendingAmount: totalAmt };
+    }
 
-// optional GST update
-if (gst) {
-  customerUpdate.gst = gst;
-}
+    // optional GST update
+    if (gst) {
+      customerUpdate.gst = gst;
+    }
 
-await Customer.findByIdAndUpdate(customerId, customerUpdate, {
-  new: true,
-});
+    await Customer.findByIdAndUpdate(customerId, customerUpdate, {
+      new: true,
+    });
 
     // FETCH CUSTOMER
     const customer = mongoose.Types.ObjectId.isValid(customerId)
