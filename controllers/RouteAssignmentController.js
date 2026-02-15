@@ -131,33 +131,19 @@ exports.getCustomerByAssignedStaff = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(staffId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid staffId",
+        message: "Invalid staffId"
       });
     }
 
     const staffObjectId = new mongoose.Types.ObjectId(staffId);
 
-    // Build date filter safely
-    let dateFilter = {};
-    if (date) {
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
 
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
+    const routeQuery = { staffId: staffObjectId };
+    if (date) routeQuery.date = date;
 
-      dateFilter = {
-        date: { $gte: startOfDay, $lte: endOfDay },
-      };
-    }
-
-    const assignments = await RouteAssignment.find({
-      ...dateFilter,
-      $or: [
-        { staffId: staffObjectId },
-        { salesStaffId: staffObjectId },
-      ],
-    }).select("routeId");
+    const assignments = await RouteAssignment
+      .find(routeQuery)
+      .select("routeId");
 
     if (!assignments.length) {
       return res.status(200).json({
@@ -165,16 +151,18 @@ exports.getCustomerByAssignedStaff = async (req, res) => {
         message: date
           ? "No routes assigned for this day"
           : "No routes assigned till now",
-        customers: [],
+        customers: []
       });
     }
 
+
     const routeIds = assignments.map(a => a.routeId);
 
+   
     const customers = await Customer.find({
       routeId: { $in: routeIds },
       isDeleted: false,
-      status: true,
+      status: true
     })
       .populate("routeId", "routeName")
       .sort({ lineNo: 1 });
@@ -183,14 +171,14 @@ exports.getCustomerByAssignedStaff = async (req, res) => {
       success: true,
       message: "Customers fetched successfully",
       totalCustomers: customers.length,
-      customers,
+      customers
     });
 
   } catch (error) {
     console.error("Assigned Customers Error:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error",
+      message: "Internal Server Error"
     });
   }
 };
