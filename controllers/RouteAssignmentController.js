@@ -128,24 +128,36 @@ exports.getCustomerByAssignedStaff = async (req, res) => {
     const { staffId } = req.params;
     const { date } = req.query;
 
-    // ✅ Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(staffId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid staffId"
+        message: "Invalid staffId",
       });
     }
 
     const staffObjectId = new mongoose.Types.ObjectId(staffId);
 
-    // 1️⃣ Build route query
-    const routeQuery = { staffId: staffObjectId };
-    if (date) routeQuery.date = date;
+    // Build date filter safely
+    let dateFilter = {};
+    if (date) {
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
 
-    // 2️⃣ Find assignments
-    const assignments = await RouteAssignment
-      .find(routeQuery)
-      .select("routeId");
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      dateFilter = {
+        date: { $gte: startOfDay, $lte: endOfDay },
+      };
+    }
+
+    const assignments = await RouteAssignment.find({
+      ...dateFilter,
+      $or: [
+        { staffId: staffObjectId },
+        { salesStaffId: staffObjectId },
+      ],
+    }).select("routeId");
 
     if (!assignments.length) {
       return res.status(200).json({
@@ -153,18 +165,16 @@ exports.getCustomerByAssignedStaff = async (req, res) => {
         message: date
           ? "No routes assigned for this day"
           : "No routes assigned till now",
-        customers: []
+        customers: [],
       });
     }
 
-    // 3️⃣ Extract routeIds (already ObjectId ✅)
     const routeIds = assignments.map(a => a.routeId);
 
-    // 4️⃣ Find customers
     const customers = await Customer.find({
       routeId: { $in: routeIds },
       isDeleted: false,
-      status: true
+      status: true,
     })
       .populate("routeId", "routeName")
       .sort({ lineNo: 1 });
@@ -173,14 +183,144 @@ exports.getCustomerByAssignedStaff = async (req, res) => {
       success: true,
       message: "Customers fetched successfully",
       totalCustomers: customers.length,
-      customers
+      customers,
     });
 
   } catch (error) {
     console.error("Assigned Customers Error:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error"
+      message: "Internal Server Error",
+    });
+  }
+};
+
+
+exports.assignRoute2 = async (req, res) => {
+  try {
+    const { date, staffId, salesStaffId, routeId } = req.body;
+
+    // ---------------- VALIDATION ----------------
+    if (!date || !routeId) {
+      return res.status(400).json({
+        message: "date and routeId are required",
+      });
+    }
+
+    if (!staffId && !salesStaffId) {
+      return res.status(400).json({
+        message: "At least one staff (delivery or sales) must be assigned",
+      });
+    }
+
+    // Find existing assignment for same date + route
+    let assignment = await RouteAssignment.findOne({ date, routeId });
+
+    let isUpdate = false;
+
+    // =====================================================
+    // 🔹 UPDATE EXISTING ASSIGNMENT
+    // =====================================================
+    if (assignment) {
+      isUpdate = true;
+
+      // -------- DELIVERY STAFF VALIDATION --------
+      if (staffId !== undefined) {
+        const deliveryStaffCount = await RouteAssignment.countDocuments({
+          date,
+          staffId,
+          _id: { $ne: assignment._id }, // exclude current
+        });
+
+        if (staffId && deliveryStaffCount >= 2) {
+          return res.status(400).json({
+            message: "Delivery staff already has 2 routes today",
+          });
+        }
+
+        assignment.staffId = staffId || null;
+      }
+
+      // -------- SALES STAFF VALIDATION --------
+      if (salesStaffId !== undefined) {
+        const salesStaffCount = await RouteAssignment.countDocuments({
+          date,
+          salesStaffId,
+          _id: { $ne: assignment._id }, // exclude current
+        });
+
+        if (salesStaffId && salesStaffCount >= 2) {
+          return res.status(400).json({
+            message: "Sales staff already has 2 routes today",
+          });
+        }
+
+        assignment.salesStaffId = salesStaffId || null;
+      }
+
+      await assignment.save();
+    }
+
+    // =====================================================
+    // 🔹 CREATE NEW ASSIGNMENT
+    // =====================================================
+    else {
+
+      // -------- DELIVERY STAFF VALIDATION --------
+      if (staffId) {
+        const deliveryStaffCount = await RouteAssignment.countDocuments({
+          date,
+          staffId,
+        });
+
+        if (deliveryStaffCount >= 2) {
+          return res.status(400).json({
+            message: "Delivery staff already has 2 routes today",
+          });
+        }
+      }
+
+      // -------- SALES STAFF VALIDATION --------
+      if (salesStaffId) {
+        const salesStaffCount = await RouteAssignment.countDocuments({
+          date,
+          salesStaffId,
+        });
+
+        if (salesStaffCount >= 2) {
+          return res.status(400).json({
+            message: "Sales staff already has 2 routes today",
+          });
+        }
+      }
+
+      assignment = await RouteAssignment.create({
+        date,
+        routeId,
+        staffId: staffId || null,
+        salesStaffId: salesStaffId || null,
+      });
+    }
+
+    // Populate response
+    const populatedAssignment = await RouteAssignment.findById(
+      assignment._id
+    )
+      .populate("staffId", "name email phone")
+      .populate("salesStaffId", "name email phone")
+      .populate("routeId", "routeName areas");
+
+    return res.status(isUpdate ? 200 : 201).json({
+      message: isUpdate
+        ? "Route assignment updated successfully"
+        : "Route assigned successfully",
+      data: populatedAssignment,
+    });
+
+  } catch (error) {
+    console.error("Error in assignRoute:", error);
+    return res.status(500).json({
+      message: error.message,
     });
   }
 };
