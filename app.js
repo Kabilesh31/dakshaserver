@@ -25,12 +25,10 @@ const endOfDayCron = require("./cron/endOfDayCron");
 
 
 
-
-
-
 const vehicle = require('./routes/vehicleRoutes');
 const routeZone = require("./routes/routeRoutes");
 const routeAssign = require("./routes/routeAssignmentRoutes");
+const routeSaleAssign = require("./routes/routeSaleAssignmentRoutes")
 const deliveryRoutes = require("./routes/deliveryRoutes");
 
 app.use(express.json());
@@ -80,7 +78,7 @@ app.use("/api/delivery", deliveryRoutes);
 app.use("/api/staff/auth", staffAuthRoutes);
 app.use("/api/bills", billRoutes);
 app.use("/api/notifications", notificationRoutes);
-
+app.use("/api/route-assignment-sales", routeSaleAssign);
 app.use("/api/location", locationRoutes);
 
 app.post('/api/driveUpload', upload.single('file'), async (req, res) => {
