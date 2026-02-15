@@ -8,12 +8,7 @@
     staffId: {
       type: mongoose.Schema.Types.ObjectId, 
       ref: "Staff",
-      default : null
-    },
-    salesStaffId: {
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Staff",
-      default : null
+      required : true
     },
     routeId: {
       type: mongoose.Schema.Types.ObjectId,
