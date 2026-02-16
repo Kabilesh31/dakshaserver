@@ -18,7 +18,7 @@ exports.updateLineOrder = async (req, res) => {
           routeId: routeId
         },
         update: {
-          $set: { lineNo: c.lineNo }
+          $set: { lineNo: c.lineNo, isNew: false },
         }
       }
     }));

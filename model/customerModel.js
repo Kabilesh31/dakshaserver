@@ -69,8 +69,10 @@ phone2: {
   lastOrderDate: {
     type: Date
   },
-
-
+  isNew : {
+    type : Boolean,
+    default : true
+  },
   isDeleted: {
     type: Boolean,
     default: false
