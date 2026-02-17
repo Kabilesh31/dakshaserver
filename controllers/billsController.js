@@ -16,10 +16,12 @@ exports.createBill = async (req, res) => {
       paymentMethod = null,
       orderStatus = "pending",
       createdBy,
-       gst, 
+      gst,
     } = req.body;
 
+    // ======================
     // VALIDATION
+    // ======================
     if (
       !customerName ||
       !customerId ||
@@ -31,27 +33,34 @@ exports.createBill = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
+    // ======================
     // PAYMENT RULE
+    // ======================
     if (!paidStatus) paymentMethod = null;
+
     if (paidStatus && !["cod", "online"].includes(paymentMethod)) {
       return res.status(400).json({
         message: "Invalid payment method",
       });
     }
 
-// CREATE BILL
-const bill = await Bill.create({
-  customerName,
-  customerId,
-  orderedProducts,
-  totalAmt,
-  paidStatus,
-  paymentMethod,
-  orderStatus,
-  createdBy,
-});
+    // ======================
+    // CREATE BILL
+    // ======================
+    const bill = await Bill.create({
+      customerName,
+      customerId,
+      orderedProducts,
+      totalAmt,
+      paidStatus,
+      paymentMethod,
+      orderStatus,
+      createdBy,
+    });
 
+    // ======================
     // CREATE NOTIFICATION
+    // ======================
     const notification = await Notification.create({
       user: createdBy,
       title: "New Bill Created",
@@ -66,51 +75,58 @@ const bill = await Bill.create({
       timeAgo: "just now",
     });
 
+    // ======================
+    // UPDATE CUSTOMER (ONLY GST + lastOrderDate)
+    // ======================
     const customerUpdate = {
-      orderPending: true,
-      paymentPending: !paidStatus,
       lastOrderDate: new Date(),
     };
 
-    // payment pending amount logic
-    if (paidStatus) {
-      customerUpdate.paymentPendingAmount = 0;
-    } else {
-      customerUpdate.$inc = { paymentPendingAmount: totalAmt };
-    }
-
-    // optional GST update
     if (gst) {
       customerUpdate.gst = gst;
     }
+    if (!paidStatus) {
+  customerUpdate.$inc = {
+    paymentPendingAmount: totalAmt,
+  };
+}
 
     await Customer.findByIdAndUpdate(customerId, customerUpdate, {
       new: true,
     });
 
+    // ======================
     // FETCH CUSTOMER
+    // ======================
     const customer = mongoose.Types.ObjectId.isValid(customerId)
-      ? await Customer.findById(customerId).select("name phone address").lean()
+      ? await Customer.findById(customerId)
+          .select("name phone address")
+          .lean()
       : null;
 
+    // ======================
     // FETCH STAFF
+    // ======================
     const staff = mongoose.Types.ObjectId.isValid(createdBy)
-      ? await Staff.findById(createdBy).select("name mobile type").lean()
+      ? await Staff.findById(createdBy)
+          .select("name mobile type")
+          .lean()
       : null;
 
+    // ======================
     // FINAL RESPONSE
+    // ======================
     res.status(201).json({
       message: "Bill created successfully",
       bill: {
         ...bill.toObject(),
-      customerDetails: customer
-  ? {
-      name: customer.name || "",
-      mobile: customer.phone || customer.mobile || "",
-      address: customer.address || "",
-    }
-  : null,
-
+        customerDetails: customer
+          ? {
+              name: customer.name || "",
+              mobile: customer.phone || customer.mobile || "",
+              address: customer.address || "",
+            }
+          : null,
         staffDetails: staff
           ? {
               name: staff.name,
@@ -125,7 +141,6 @@ const bill = await Bill.create({
     res.status(500).json({ message: "Failed to create bill" });
   }
 };
-
 
 exports.getBills = async (req, res) => {
   try {
@@ -232,7 +247,7 @@ exports.changeOrderStatus = async (req, res) => {
       "approved",
       "out for delivery",
       "delivered",
-      "rejected",   // ✅ added
+      "rejected",
     ];
 
     if (!orderStatus || !validStatuses.includes(orderStatus)) {
@@ -240,18 +255,51 @@ exports.changeOrderStatus = async (req, res) => {
     }
 
     const bill = await Bill.findById(billId);
-    if (!bill) return res.status(404).json({ message: "Bill not found" });
+    if (!bill) {
+      return res.status(404).json({ message: "Bill not found" });
+    }
+
+    const previousStatus = bill.orderStatus;
+
+    if (previousStatus === orderStatus) {
+      return res.status(200).json({
+        message: "Order status already updated",
+        bill,
+      });
+    }
 
     bill.orderStatus = orderStatus;
     await bill.save();
 
-    res.status(200).json({ message: "Order status updated", bill });
+    // ==========================
+    // IF APPROVED → set flags
+    // ==========================
+    if (orderStatus === "approved") {
+      await Customer.findByIdAndUpdate(bill.customerId, {
+        orderPending: true,
+        paymentPending: !bill.paidStatus,
+      });
+    }
+
+    // ==========================
+    // IF REJECTED → reset flags
+    // ==========================
+    if (orderStatus === "rejected") {
+      await Customer.findByIdAndUpdate(bill.customerId, {
+        orderPending: false,
+        paymentPending: false,
+      });
+    }
+
+    res.status(200).json({
+      message: "Order status updated successfully",
+      bill,
+    });
   } catch (error) {
     console.error("Change Order Status error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 // exports.updatePaymentStatus = async (req, res) => {
 //   try {
