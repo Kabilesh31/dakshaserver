@@ -1,4 +1,5 @@
 const Attendance = require("../model/attendanceModel");
+const Staff = require("../model/staffModal");
 
 // staff check-in
 exports.checkIn = async (req, res) => {
@@ -7,7 +8,6 @@ exports.checkIn = async (req, res) => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    // prevent multiple check-ins same day
     const existing = await Attendance.findOne({ staffId, date: today });
 
     if (existing) {
@@ -25,8 +25,12 @@ exports.checkIn = async (req, res) => {
       gpsStatus: gpsStatus || "unknown",
     });
 
-    // ✅ Schedule automatic checkout at 12 AM
-    scheduleAutoCheckout(attendance._id);
+    // ✅ UPDATE STAFF ATTENDANCE STATUS
+    await Staff.findByIdAndUpdate(staffId, {
+      attendance: true,
+    });
+
+    scheduleAutoCheckout(attendance._id, staffId);
 
     res.status(201).json({
       message: "Check-in successful",
@@ -36,6 +40,7 @@ exports.checkIn = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // staff check-out
 exports.checkOut = async (req, res) => {
@@ -59,6 +64,11 @@ exports.checkOut = async (req, res) => {
     attendance.currentStatus = "checked-out";
     await attendance.save();
 
+    // ✅ UPDATE STAFF ATTENDANCE STATUS
+    await Staff.findByIdAndUpdate(staffId, {
+      attendance: false,
+    });
+
     res.status(200).json({
       message: "Check-out successful",
       data: attendance,
@@ -67,6 +77,7 @@ exports.checkOut = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 // get all attendance
 exports.getAllAttendance = async (req, res) => {
   try {
@@ -89,10 +100,10 @@ exports.getAttendanceByStaff = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-const scheduleAutoCheckout = async (attendanceId) => {
+const scheduleAutoCheckout = async (attendanceId, staffId) => {
   const now = new Date();
   const tomorrow = new Date();
-  tomorrow.setHours(23, 59, 59, 999); // Checkout at 23:59:59 (end of day)
+  tomorrow.setHours(23, 59, 59, 999);
 
   const msUntilCheckout = tomorrow.getTime() - now.getTime();
 
@@ -104,6 +115,12 @@ const scheduleAutoCheckout = async (attendanceId) => {
         attendance.endTime = new Date();
         attendance.currentStatus = "checked-out";
         await attendance.save();
+
+        // ✅ Update staff attendance to false
+        await Staff.findByIdAndUpdate(staffId, {
+          attendance: false,
+        });
+
         console.log(`Auto checkout done for attendance ${attendanceId}`);
       }
     } catch (err) {

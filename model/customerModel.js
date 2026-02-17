@@ -69,6 +69,31 @@ phone2: {
   lastOrderDate: {
     type: Date
   },
+isVisited: {
+  type: Boolean,
+  default: false
+},
+visitedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Staff"
+},
+visitedAt: {
+  type: Date
+}
+,
+nextVisit: {
+  nextVisitDate: {
+    type: Date,
+    default: null
+  },
+  notes: {
+    type: String,
+    default: null,
+    trim: true
+  }
+},
+
+
   isNew : {
     type : Boolean,
     default : true

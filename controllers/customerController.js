@@ -1,5 +1,8 @@
 const Customer = require("../model/customerModel");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
+const Staff = require("../model/staffModal");
+const mongoose = require("mongoose");
+
 
 
 // create Customer
@@ -188,5 +191,94 @@ exports.getCustomerByStaffId = async (req, res) => {
     res.status(200).json(customer);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+exports.toggleVisitStatus = async (req, res) => {
+  try {
+    const { customerId } = req.params;
+    const { staffId, action, nextVisitDate, notes } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(staffId)) {
+      return res.status(400).json({ message: "Invalid staffId" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(customerId)) {
+      return res.status(400).json({ message: "Invalid customerId" });
+    }
+
+    if (!staffId || !action) {
+      return res.status(400).json({
+        message: "staffId and action are required",
+      });
+    }
+
+    const staff = await Staff.findById(staffId).lean();
+
+    if (!staff) {
+      return res.status(404).json({
+        message: "Staff not found",
+      });
+    }
+
+    const staffType = String(staff.type || "").trim().toLowerCase();
+
+    if (staffType !== "sales") {
+      return res.status(403).json({
+        message: "Only sales staff can mark visit",
+      });
+    }
+
+    let updateData = {};
+
+    if (action === "in") {
+      updateData = {
+        isVisited: true,
+        visitedBy: staff._id,
+        visitedAt: new Date(),
+      };
+    } 
+    else if (action === "out") {
+
+      updateData = {
+        isVisited: false,
+      };
+
+      // ✅ If next visit details provided, store them
+      if (nextVisitDate || notes) {
+        updateData.nextVisit = {
+          nextVisitDate: nextVisitDate ? new Date(nextVisitDate) : null,
+          notes: notes || null,
+        };
+      }
+    } 
+    else {
+      return res.status(400).json({
+        message: "Action must be 'in' or 'out'",
+      });
+    }
+
+    const customer = await Customer.findOneAndUpdate(
+      { _id: customerId, isDeleted: false },
+      { $set: updateData },
+      { new: true }
+    );
+
+    if (!customer) {
+      return res.status(404).json({
+        message: "Customer not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: `Customer visit marked ${action}`,
+      data: customer,
+    });
+
+  } catch (error) {
+    console.error("Visit API Error:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 };

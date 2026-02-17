@@ -79,6 +79,10 @@ const staffSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  attendance: {
+  type: Boolean,
+  default: null
+},
 
   createdAt: {
     type: Date,
