@@ -5,40 +5,38 @@ const Attendance = require("../model/attendanceModel");
 const getToday = () => new Date().toISOString().split("T")[0];
 
 cron.schedule(
-  "59 23 * * *",
+  "59 23 * * *", // Run at 11:59 PM
   async () => {
     console.log("🌙 End-of-day attendance cron started");
 
     const today = getToday();
 
     try {
-      // Only check active staff
-      const activeStaff = await Staff.find(
-        { dutyStatus: "active" },
-        { _id: 1 }
+      // 1️⃣ Auto checkout all still checked-in
+      await Attendance.updateMany(
+        {
+          date: today,
+          currentStatus: "checked-in",
+        },
+        {
+          $set: {
+            endTime: new Date(),
+            currentStatus: "checked-out",
+          },
+        }
       );
 
-      for (const staff of activeStaff) {
-        const result = await Attendance.updateOne(
-          {
-            staffId: staff._id,
-            date: today,
-            currentStatus: "checked-in",
-          },
-          {
-            $set: {
-              endTime: new Date(),
-              currentStatus: "checked-out",
-            },
-          }
-        );
+      console.log("✅ Auto checkout completed");
 
-        if (result.matchedCount > 0) {
-          console.log(`✅ Auto checkout done for staffId: ${staff._id}`);
-        }
-      }
+      // 2️⃣ Reset attendance for ALL staff (no dutyStatus condition)
+      await Staff.updateMany(
+        {},
+        { $set: { attendance: false } }
+      );
 
-      console.log("✅ End-of-day auto checkout completed");
+      console.log("🔄 All staff attendance reset to false");
+
+      console.log("✅ End-of-day process completed");
     } catch (error) {
       console.error("❌ End-of-day cron error:", error.message);
     }
