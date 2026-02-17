@@ -10,6 +10,7 @@ router.put("/:id", upload.single("img"), customerController.updateCustomer);
 router.delete("/:id", customerController.deleteCustomer);
 router.patch("/:id/status", customerController.changeCustomerStatus);
 router.get("/:id", customerController.getCustomerById);
+router.patch("/visit/:customerId", customerController.toggleVisitStatus);
 
 // Other routes
 router.post("/", upload.single("img"), customerController.createCustomer);

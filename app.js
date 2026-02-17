@@ -22,6 +22,7 @@ const locationRoutes = require("./routes/locationRoutes");
 const billRoutes = require("./routes/billsRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const endOfDayCron = require("./cron/endOfDayCron");
+const customerVisitReset = require("./cron/customerVisitReset");
 
 
 
@@ -152,6 +153,8 @@ mongoose.connect(mongoString)
 
     // ✅ Start cron only after DB is ready
     require("./cron/endOfDayCron");
+    require("./cron/customerVisitReset");
+    require("./cron/staffDutyReset"); 
   })
   .catch((error) => {
     console.log("Database Not Connected:", error);
