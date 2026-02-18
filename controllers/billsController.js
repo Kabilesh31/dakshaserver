@@ -275,14 +275,19 @@ exports.changeOrderStatus = async (req, res) => {
     // ==========================
     // IF APPROVED → set flags
     // ==========================
-    if (orderStatus === "approved") {
-      await Customer.findByIdAndUpdate(bill.customerId, {
+   if (orderStatus === "approved") {
+  await Customer.findByIdAndUpdate(
+    bill.customerId,
+    {
+      $set: {
         orderPending: true,
-        waitingApprove : false,
+        waitingApprove: false,
         paymentPending: !bill.paidStatus,
-        
-      });
-    }
+      },
+    },
+    { new: true }
+  );
+}
 
 
     if (orderStatus === "rejected") {
