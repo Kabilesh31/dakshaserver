@@ -80,6 +80,7 @@ exports.createBill = async (req, res) => {
     // ======================
     const customerUpdate = {
       lastOrderDate: new Date(),
+      waitingApprove : true
     };
 
     if (gst) {
@@ -231,7 +232,7 @@ exports.getBillById = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("getBillById error:", error); // ✅ detailed logging
+    console.error("getBillById error:", error);
     res.status(500).json({ message: "Failed to fetch bill", error: error.message });
   }
 };
@@ -277,17 +278,18 @@ exports.changeOrderStatus = async (req, res) => {
     if (orderStatus === "approved") {
       await Customer.findByIdAndUpdate(bill.customerId, {
         orderPending: true,
+        waitingApprove : false,
         paymentPending: !bill.paidStatus,
+        
       });
     }
 
-    // ==========================
-    // IF REJECTED → reset flags
-    // ==========================
+
     if (orderStatus === "rejected") {
       await Customer.findByIdAndUpdate(bill.customerId, {
         orderPending: false,
         paymentPending: false,
+        waitingApprove : false
       });
     }
 
@@ -398,7 +400,7 @@ exports.markHasDelivered = async(req, res) => {
 exports.updatePaymentStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const {paymentMethod } = req.body;
+    const {paymentMethod, paymentCollectedBy} = req.body;
 
     const bill = await Bill.findOne({
       customerId : id,
@@ -414,6 +416,8 @@ exports.updatePaymentStatus = async (req, res) => {
 
     bill.paidStatus = true;
     bill.paymentMethod = paymentMethod
+    bill.paymentCollectedBy = paymentCollectedBy
+    bill.paymentCollectedAt = new Date()
     await bill.save()
 
     await Customer.findByIdAndUpdate(
@@ -434,3 +438,31 @@ exports.updatePaymentStatus = async (req, res) => {
   }
 };
 
+exports.getBillsByStaff = async (req, res) => {
+  try {
+    const {id} = req.params;
+   
+    const bills = await Bill.find({
+     $or : [
+       {paymentCollectedBy: id},
+        {createdBy: id}
+     ]
+    });
+
+    if (!bills.length) {
+      return res.status(404).json({
+        message: "No Bills Found"
+      });
+    }
+
+    res.status(200).json({
+      message: "Success",
+      data: bills
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      message: err.message
+    });
+  }
+};

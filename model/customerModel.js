@@ -46,10 +46,13 @@ phone2: {
     }
   },
 
-  /** ✅ NEW FIELD */
    orderPending: {
     type: Boolean,
     default: false
+  },
+  waitingApprove : {
+    type :Boolean,
+    default : false
   },
 
   paymentPending: {
