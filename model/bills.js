@@ -33,7 +33,14 @@ const billSchema = new mongoose.Schema(
       enum: ["Cash", "UPI", "CARD", null],
       default: null,
     },
-
+    paymentCollectedBy : {
+      type : String,
+      default : null
+    },
+    paymentCollectedAt : {
+      type : Date,
+      default : null
+    },
  orderStatus: {
   type: String,
   enum: [
