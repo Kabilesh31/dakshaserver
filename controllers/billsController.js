@@ -473,3 +473,30 @@ exports.getBillsByStaff = async (req, res) => {
     });
   }
 };
+
+exports.getBillsByDeliveryStaff = async (req, res) => {
+  try {
+    const {id} = req.params;
+   
+    const bills = await Bill.find({
+      deliveredBy: id
+    });
+
+    if (!bills.length) {
+      return res.status(404).json({
+        message: "No Bills Found"
+      });
+    }
+
+    res.status(200).json({
+      message: "Success",
+      data: bills
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      message: err.message
+    });
+  }
+};
+
