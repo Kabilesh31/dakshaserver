@@ -37,6 +37,10 @@ const billSchema = new mongoose.Schema(
       type : String,
       default : null
     },
+    deliveredBy : {
+      type : String,
+      default : null
+    },
     paymentCollectedAt : {
       type : Date,
       default : null
