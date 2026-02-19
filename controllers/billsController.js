@@ -361,6 +361,7 @@ exports.changeOrderStatus = async (req, res) => {
 
 exports.markHasDelivered = async(req, res) => {
   const {id} = req.params;
+  const {deliveredBy} = req.body
   try{
     const bill = await Bill.findOne({
       customerId : id,
@@ -376,6 +377,7 @@ exports.markHasDelivered = async(req, res) => {
 
     bill.orderStatus = "delivered"
     bill.deliveredAt = new Date();
+    bill.deliveredBy = deliveredBy
 
     await bill.save()
     
