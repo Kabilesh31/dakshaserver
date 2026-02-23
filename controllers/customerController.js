@@ -3,8 +3,6 @@ const uploadToCloudinary = require("../utils/cloudinaryUpload");
 const Staff = require("../model/staffModal");
 const mongoose = require("mongoose");
 
-
-
 // create Customer
 exports.createCustomer = async (req, res) => {
   try {
@@ -15,15 +13,13 @@ exports.createCustomer = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    // ✅ Find last lineNo of this route
     const lastCustomer = await Customer.findOne({
       routeId: req.body.routeId,
       isDeleted: false
     })
-      .sort({ lineNo: -1 })  // descending
+      .sort({ lineNo: -1 })  
       .select("lineNo");
 
-    // If exists → increment, else start from 1
     const newLineNo = lastCustomer ? lastCustomer.lineNo + 1 : 1;
 
     const customer = await Customer.create({
@@ -47,13 +43,12 @@ exports.createCustomer = async (req, res) => {
 };
 
 
-// get customer all
 exports.getCustomers = async (req, res) => {
   try {
     const customers = await Customer.find({ isDeleted: false })
       .sort({
-        routeId: 1,   // group by route
-        lineNo: 1     // 🔥 delivery order inside route
+        routeId: 1,  
+        lineNo: 1    
       });
 
     res.status(200).json(customers);
@@ -63,7 +58,6 @@ exports.getCustomers = async (req, res) => {
 };
 
 
-// get Customer by id
 exports.getCustomerById = async (req, res) => {
   try {
     const customer = await Customer.findOne({
@@ -82,7 +76,6 @@ exports.getCustomerById = async (req, res) => {
 };
 
 
-// Update Customer
 exports.updateCustomer = async (req, res) => {
   try {
     const updateData = { ...req.body };
@@ -253,7 +246,7 @@ exports.toggleVisitStatus = async (req, res) => {
     else if (action === "out") {
 
       updateData = {
-        isVisited: false,
+        isVisited: true,
       };
 
       if (nextVisitDate || notes) {

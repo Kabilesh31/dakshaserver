@@ -5,7 +5,7 @@ const customerController = require("../controllers/customerController");
 
 
 router.get("/route/:routeId", customerController.getCustomersByRoute);
-// ✅ Then the generic :id routes
+
 router.put("/:id", upload.single("img"), customerController.updateCustomer);
 router.delete("/:id", customerController.deleteCustomer);
 router.patch("/:id/status", customerController.changeCustomerStatus);
