@@ -19,9 +19,6 @@ exports.createBill = async (req, res) => {
       gst,
     } = req.body;
 
-    // ======================
-    // VALIDATION
-    // ======================
     if (
       !customerName ||
       !customerId ||
@@ -33,9 +30,6 @@ exports.createBill = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // ======================
-    // PAYMENT RULE
-    // ======================
     if (!paidStatus) paymentMethod = null;
 
     if (paidStatus && !["cod", "online"].includes(paymentMethod)) {
@@ -44,9 +38,6 @@ exports.createBill = async (req, res) => {
       });
     }
 
-    // ======================
-    // CREATE BILL
-    // ======================
     const bill = await Bill.create({
       customerName,
       customerId,
@@ -58,9 +49,6 @@ exports.createBill = async (req, res) => {
       createdBy,
     });
 
-    // ======================
-    // CREATE NOTIFICATION
-    // ======================
     const notification = await Notification.create({
       user: createdBy,
       title: "New Bill Created",
@@ -75,48 +63,46 @@ exports.createBill = async (req, res) => {
       timeAgo: "just now",
     });
 
-    // ======================
-    // UPDATE CUSTOMER (ONLY GST + lastOrderDate)
-    // ======================
+
     const customerUpdate = {
       lastOrderDate: new Date(),
-      waitingApprove : true
+      waitingApprove : true,
+      nextVisit: {
+        nextVisitDate: null,
+        notes: null,
+        currentVisitLocation: {
+          lat: null,
+          long: null,
+        },
+      },
     };
 
     if (gst) {
       customerUpdate.gst = gst;
     }
     if (!paidStatus) {
-  customerUpdate.$inc = {
-    paymentPendingAmount: totalAmt,
-  };
+    customerUpdate.$inc = {
+      paymentPendingAmount: totalAmt,
+    };
 }
 
     await Customer.findByIdAndUpdate(customerId, customerUpdate, {
       new: true,
     });
 
-    // ======================
-    // FETCH CUSTOMER
-    // ======================
     const customer = mongoose.Types.ObjectId.isValid(customerId)
       ? await Customer.findById(customerId)
           .select("name phone address")
           .lean()
       : null;
 
-    // ======================
-    // FETCH STAFF
-    // ======================
     const staff = mongoose.Types.ObjectId.isValid(createdBy)
       ? await Staff.findById(createdBy)
           .select("name mobile type")
           .lean()
       : null;
 
-    // ======================
-    // FINAL RESPONSE
-    // ======================
+
     res.status(201).json({
       message: "Bill created successfully",
       bill: {
@@ -359,41 +345,69 @@ exports.changeOrderStatus = async (req, res) => {
 //   }
 // };
 
+// In your backend controller file
+const { uploadToCloudinary } = require('../utils/cloudinary');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Update your route to include multer middleware
+// router.put('/api/bills/delivered/:id', upload.single('deliveryImage'), markHasDelivered);
+
 exports.markHasDelivered = async(req, res) => {
   const {id} = req.params;
-  const {deliveredBy} = req.body
+  const { 
+    deliveredBy,          
+    deliveryPersonId,  
+    deliveryLocation       
+  } = req.body;
+  
   try{
+    // Parse deliveryLocation if it's sent as string
+    const locationData = typeof deliveryLocation === 'string' 
+      ? JSON.parse(deliveryLocation) 
+      : deliveryLocation;
+
+    let deliveryImageUrl = "";
+
+    // Upload image to Cloudinary if present
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer, "deliveries");
+      deliveryImageUrl = result.secure_url;
+    }
+
     const bill = await Bill.findOne({
-      customerId : id,
-      orderStatus : "approved"
-    })
+      customerId: id,
+      orderStatus: "approved"
+    });
 
     if(!bill) {
       return res.status(404).json({
         success: false,
         message: "No pending bill found for this customer"
-      })
+      });
     }
 
-    bill.orderStatus = "delivered"
+    bill.orderStatus = "delivered";
     bill.deliveredAt = new Date();
-    bill.deliveredBy = deliveredBy
+    bill.deliveredBy = deliveredBy;                    
+    bill.deliveryPersonId = deliveryPersonId;         
+    bill.deliveryLocation = locationData;              
+    bill.deliveryImage = deliveryImageUrl;            
 
-    await bill.save()
+    await bill.save();
     
-    // orderpending change
-    
+    // Update customer's orderPending status
     await Customer.findByIdAndUpdate(
       id,
-      {orderPending : false},
-      {new : true}
-    )
+      { orderPending: false },
+      { new: true }
+    );
 
     res.status(200).json({
       success: true,
       message: "Order marked as delivered",
       data: bill
-    })
+    });
   }catch(err){
     console.error(err); 
     res.status(500).json({
@@ -401,7 +415,7 @@ exports.markHasDelivered = async(req, res) => {
       message: "Server error"
     });
   }
-}
+};
 
 
 exports.updatePaymentStatus = async (req, res) => {
