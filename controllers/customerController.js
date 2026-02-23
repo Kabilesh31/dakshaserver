@@ -202,7 +202,7 @@ exports.getCustomerByStaffId = async (req, res) => {
 exports.toggleVisitStatus = async (req, res) => {
   try {
     const { customerId } = req.params;
-    const { staffId, action, nextVisitDate, notes } = req.body;
+    const { staffId, action, nextVisitDate, notes, currentVisitLocation } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(staffId)) {
       return res.status(400).json({ message: "Invalid staffId" });
@@ -244,16 +244,56 @@ exports.toggleVisitStatus = async (req, res) => {
       };
     } 
     else if (action === "out") {
+      // Validate location if provided (optional now)
+      if (currentVisitLocation) {
+        if (!currentVisitLocation.lat || !currentVisitLocation.long) {
+          return res.status(400).json({
+            message: "Both latitude and longitude are required when location is provided",
+          });
+        }
+        
+        // Validate that lat/long are valid numbers
+        const lat = parseFloat(currentVisitLocation.lat);
+        const long = parseFloat(currentVisitLocation.long);
+        
+        if (isNaN(lat) || isNaN(long)) {
+          return res.status(400).json({
+            message: "Invalid latitude or longitude values",
+          });
+        }
+      }
 
+      // Base update data
       updateData = {
         isVisited: true,
+        visitedBy: staff._id,
+        visitedAt: new Date(),
       };
 
-      if (nextVisitDate || notes) {
-        updateData.nextVisit = {
-          nextVisitDate: nextVisitDate ? new Date(nextVisitDate) : null,
-          notes: notes || null,
+      // Create nextVisit object with all available data
+      const nextVisitObj = {};
+
+      // Add next visit date if provided
+      if (nextVisitDate) {
+        nextVisitObj.nextVisitDate = new Date(nextVisitDate);
+      }
+
+      // Add notes if provided
+      if (notes) {
+        nextVisitObj.notes = notes;
+      }
+
+      // Add current visit location if provided
+      if (currentVisitLocation && currentVisitLocation.lat && currentVisitLocation.long) {
+        nextVisitObj.currentVisitLocation = {
+          lat: currentVisitLocation.lat,
+          long: currentVisitLocation.long
         };
+      }
+
+      // Only set nextVisit if there's data to store
+      if (Object.keys(nextVisitObj).length > 0) {
+        updateData.nextVisit = nextVisitObj;
       }
     } 
     else {

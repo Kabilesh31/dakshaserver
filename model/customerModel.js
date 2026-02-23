@@ -93,7 +93,17 @@ nextVisit: {
     type: String,
     default: null,
     trim: true
-  }
+  },
+  currentVisitLocation: {
+      lat: {
+        type: String,
+        default: null
+      },
+      long: {
+        type: String,
+        default: null
+      }
+    }
 },
 
 
