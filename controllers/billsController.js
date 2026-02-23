@@ -4,6 +4,7 @@ const Staff = require("../model/staffModal");
 const mongoose = require("mongoose");
 const Notification = require("../model/Notification");
 const socket = require("../socket");
+const uploadToCloudinary = require("../utils/cloudinaryUpload");
 
 exports.createBill = async (req, res) => {
   try {
@@ -345,13 +346,6 @@ exports.changeOrderStatus = async (req, res) => {
 //   }
 // };
 
-// In your backend controller file
-const { uploadToCloudinary } = require('../utils/cloudinary');
-const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
-
-// Update your route to include multer middleware
-// router.put('/api/bills/delivered/:id', upload.single('deliveryImage'), markHasDelivered);
 
 exports.markHasDelivered = async(req, res) => {
   const {id} = req.params;
