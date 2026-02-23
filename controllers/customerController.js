@@ -13,35 +13,54 @@ exports.createCustomer = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    const lastCustomer = await Customer.findOne({
-      routeId: req.body.routeId,
-      isDeleted: false
-    })
-      .sort({ lineNo: -1 })  
-      .select("lineNo");
+    let createdCustomer = null;
+    let attempts = 0;
+    const maxAttempts = 5;
 
-    const newLineNo = lastCustomer ? lastCustomer.lineNo + 1 : 1;
+    while (!createdCustomer && attempts < maxAttempts) {
+      attempts++;
 
-    const customer = await Customer.create({
-      ...req.body,
-      lineNo: newLineNo,
-      geoLocation: {
-        lat: req.body.lat,
-        long: req.body.long,
-      },
-      img: imageUrl,
-    });
+      const lastCustomer = await Customer.findOne({
+        routeId: req.body.routeId,
+        isDeleted: false,
+      })
+        .sort({ lineNo: -1 })
+        .select("lineNo");
+
+      const newLineNo = lastCustomer ? lastCustomer.lineNo + 1 : 1;
+
+      try {
+        createdCustomer = await Customer.create({
+          ...req.body,
+          lineNo: newLineNo,
+          geoLocation: {
+            lat: req.body.lat,
+            long: req.body.long,
+          },
+          img: imageUrl,
+        });
+      } catch (err) {
+        // Duplicate key error → retry
+        if (err.code === 11000) {
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!createdCustomer) {
+      return res.status(500).json({ message: "Failed to generate unique line number" });
+    }
 
     res.status(201).json({
       message: "Customer created successfully",
-      data: customer,
+      data: createdCustomer,
     });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 exports.getCustomers = async (req, res) => {
   try {
