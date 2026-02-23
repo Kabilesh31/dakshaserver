@@ -1,6 +1,7 @@
 const Vehicle = require("../model/vehicleModal");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
-
+const RouteAssignment = require("../model/routeAssignmentModal")
+const RouteSaleAssignment = require("../model/routeSaleAssignmentModal")
 // create vehicle
 exports.createVehicle = async (req, res) => {
   try {
@@ -112,3 +113,36 @@ exports.softDeleteVehicle = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getVehicleForAssign = async(req, res)=> {
+  try{
+    const {date} = req.query;
+    if(!date){
+      return res.status(400).json({ message: "Date is required" });
+    }
+    // already assigned vehicles
+    const routeAssigned = await RouteAssignment.find({ date })
+      .select("vehicleNo -_id");
+
+    const saleAssigned = await RouteSaleAssignment.find({date})
+      .select("vehicleNo -_id")
+
+    const assignedVehicles = [
+      ...routeAssigned.map(item => item.vehicleNo),
+      ...saleAssigned.map(item => item.vehicleNo)
+    ].filter(v => v)
+
+    const availableVehicles = await Vehicle.find({
+      vehicleNumber : { $nin: assignedVehicles}
+    }) 
+
+    res.status(200).json({
+      success: true,
+      length : availableVehicles.length,
+      data : availableVehicles,
+    })
+
+  }catch(error){
+    console.log(error)
+  }
+}
