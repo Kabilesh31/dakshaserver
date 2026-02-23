@@ -23,6 +23,10 @@
     createdAt: {
       type: Date,
       default: Date.now
+    },
+      vehicleNo : {
+      type : String, 
+      default : null
     }
   });
 

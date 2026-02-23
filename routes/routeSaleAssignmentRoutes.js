@@ -8,13 +8,12 @@ const {
   getStaffRoutesToday,
   completeRoute,  
   deleteAssignment,
-  getCustomerByAssignedStaff, 
-  assignRoute2
+  getCustomerByAssignedStaff
 } = require("../controllers/RouteSaleAssignmentController")
 
 // assign route to staff
 router.post("/", assignRoute)
-router.post("/assignRoute", assignRoute2)
+
 
 // admin – get assigned routes by date
 router.get("/", getAssignmentsByDate)
