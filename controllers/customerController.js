@@ -15,8 +15,20 @@ exports.createCustomer = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
+    // ✅ Find last lineNo of this route
+    const lastCustomer = await Customer.findOne({
+      routeId: req.body.routeId,
+      isDeleted: false
+    })
+      .sort({ lineNo: -1 })  // descending
+      .select("lineNo");
+
+    // If exists → increment, else start from 1
+    const newLineNo = lastCustomer ? lastCustomer.lineNo + 1 : 1;
+
     const customer = await Customer.create({
       ...req.body,
+      lineNo: newLineNo,
       geoLocation: {
         lat: req.body.lat,
         long: req.body.long,
@@ -28,6 +40,7 @@ exports.createCustomer = async (req, res) => {
       message: "Customer created successfully",
       data: customer,
     });
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -243,7 +256,6 @@ exports.toggleVisitStatus = async (req, res) => {
         isVisited: false,
       };
 
-      // ✅ If next visit details provided, store them
       if (nextVisitDate || notes) {
         updateData.nextVisit = {
           nextVisitDate: nextVisitDate ? new Date(nextVisitDate) : null,
