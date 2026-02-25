@@ -88,6 +88,10 @@ const staffSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  tokenVersion: {
+  type: Number,
+  default: 0
+}
 });
 
 staffSchema.pre("save", async function (next) {
