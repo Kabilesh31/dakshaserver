@@ -282,7 +282,7 @@ exports.toggleVisitStatus = async (req, res) => {
         }
       }
 
-      // Base update data
+
       updateData = {
         isVisited: true,
         visitedBy: staff._id,

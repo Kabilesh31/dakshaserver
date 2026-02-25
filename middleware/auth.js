@@ -5,20 +5,19 @@ exports.isStaffAuthenticated = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
-    // 1️⃣ If no token, skip authentication (for admin frontend CRUD)
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      req.staff = null;  // No staff info
-      req.staffId = null;
-      return next();     // Allow request to continue
+      return res.status(401).json({ message: "Not authorized" });
     }
 
     const token = authHeader.split(" ")[1];
 
-    // 2️⃣ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 3️⃣ Find staff
-    const staff = await Staff.findById(decoded.id).select("-password");
+    if (decoded.role !== "staff") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const staff = await Staff.findById(decoded.id);
 
     if (!staff || staff.isDeleted) {
       return res.status(401).json({ message: "Unauthorized access" });
@@ -28,15 +27,19 @@ exports.isStaffAuthenticated = async (req, res, next) => {
       return res.status(403).json({ message: "Staff account is inactive" });
     }
 
-    // 4️⃣ Attach staff to request
+
+    if (decoded.tokenVersion !== staff.tokenVersion) {
+      return res.status(401).json({
+        message: "Logged in from another device"
+      });
+    }
+
     req.staff = staff;
     req.staffId = staff._id;
 
     next();
+
   } catch (error) {
-    // If token is invalid, treat as no staff (optional)
-    req.staff = null;
-    req.staffId = null;
-    next();  // allow admin frontend to proceed
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
