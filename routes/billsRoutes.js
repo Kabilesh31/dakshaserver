@@ -22,7 +22,7 @@ router.get("/", getBills);
 router.get("/:billId", getBillById);
 // PATCH change order status
 router.patch("/:billId/status", changeOrderStatus);
-router.put("/delivered/:id", upload.single("img"), markHasDelivered );
+router.put("/delivered/:id", upload.single("deliveryImage"), markHasDelivered );
 
 router.patch("/:id/payment", updatePaymentStatus);
 router.get("/getBillsByStaff/:id", getBillsByStaff)
