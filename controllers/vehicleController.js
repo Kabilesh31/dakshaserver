@@ -133,9 +133,11 @@ exports.getVehicleForAssign = async(req, res)=> {
     ].filter(v => v)
 
     const availableVehicles = await Vehicle.find({
-      vehicleNumber : { $nin: assignedVehicles}
+      vehicleNumber : { $nin: assignedVehicles},
+      status : true
     }) 
 
+    
     res.status(200).json({
       success: true,
       length : availableVehicles.length,
