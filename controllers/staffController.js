@@ -229,10 +229,25 @@ exports.changeDutyStatus = async (req, res) => {
       return res.status(400).json({ message: "Invalid duty status" });
     }
 
+    const updateFields = {
+      dutyStatus,
+    };
+
+    // If duty becomes active → set startedAt, clear endedAt
+    if (dutyStatus === "active") {
+      updateFields.startedAt = new Date();
+      updateFields.endedAt = null;
+    }
+
+    // If duty becomes inactive → set endedAt
+    if (dutyStatus === "inactive") {
+      updateFields.endedAt = new Date();
+    }
+
     const updatedStaff = await Staff.findByIdAndUpdate(
       req.params.id,
-      { $set: { dutyStatus } },
-      { new: true } // return updated document
+      { $set: updateFields },
+      { new: true }
     );
 
     if (!updatedStaff) {
