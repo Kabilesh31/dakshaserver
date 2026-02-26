@@ -45,17 +45,33 @@ const billSchema = new mongoose.Schema(
       type : Date,
       default : null
     },
- orderStatus: {
-  type: String,
-  enum: [
-    "pending",
-    "approved",
-    "rejected",          
-    "out for delivery",  
-    "delivered",
-  ],
-  default: "pending",
-},
+      deliveryPersonId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Staff", // change if needed
+      default: null,
+    },
+
+    deliveryLocation: {
+      latitude: { type: Number },
+      longitude: { type: Number },
+    },
+
+    deliveryImage: {
+      type: String,
+      default: null,
+    },
+
+    orderStatus: {
+      type: String,
+      enum: [
+        "pending",
+        "approved",
+        "rejected",          
+        "out for delivery",  
+        "delivered",
+      ],
+      default: "pending",
+    },
 
 
     createdBy: { type: String, required: true }, // staffId
