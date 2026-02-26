@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const Staff = require("../model/staffModal");
 
 cron.schedule(
-  "* * * * *", // 11:59 PM
+  "59 23 * * *", // 11:59 PM
   async () => {
     try {
       console.log("🔄 Staff duty reset started");
