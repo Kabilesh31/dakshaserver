@@ -60,7 +60,9 @@ const billSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-
+    orderNotes : {
+      type : String
+    },
     orderStatus: {
       type: String,
       enum: [

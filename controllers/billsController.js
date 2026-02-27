@@ -17,6 +17,7 @@ exports.createBill = async (req, res) => {
       paymentMethod = null,
       orderStatus = "pending",
       createdBy,
+      orderNotes,
       gst,
     } = req.body;
 
@@ -47,6 +48,7 @@ exports.createBill = async (req, res) => {
       paidStatus,
       paymentMethod,
       orderStatus,
+      orderNotes,
       createdBy,
     });
 
@@ -268,6 +270,7 @@ exports.changeOrderStatus = async (req, res) => {
     {
       $set: {
         orderPending: true,
+        lastOrderRejected : false,
         waitingApprove: false,
         paymentPending: !bill.paidStatus,
       },
@@ -281,7 +284,8 @@ exports.changeOrderStatus = async (req, res) => {
       await Customer.findByIdAndUpdate(bill.customerId, {
         orderPending: false,
         paymentPending: false,
-        waitingApprove : false
+        waitingApprove : false,
+        lastOrderRejected : true
       });
     }
 
