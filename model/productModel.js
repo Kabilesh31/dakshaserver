@@ -37,6 +37,12 @@ const productSchema = new mongoose.Schema({
     img : {
       type : String
     },
+    packing : {
+      type : String
+    },
+    gst : {
+      type : Number
+    }, 
     createdBy: {
       type : String
     },
