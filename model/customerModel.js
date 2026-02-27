@@ -72,39 +72,38 @@ phone2: {
   lastOrderDate: {
     type: Date
   },
-isVisited: {
-  type: Boolean,
-  default: false
-},
-visitedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Staff"
-},
-visitedAt: {
-  type: Date
-}
-,
-nextVisit: {
-  nextVisitDate: {
-    type: Date,
-    default: null
+  isVisited: {
+    type: Boolean,
+    default: false
   },
-  notes: {
-    type: String,
-    default: null,
-    trim: true
+  visitedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Staff"
   },
-  currentVisitLocation: {
-      lat: {
-        type: String,
-        default: null
-      },
-      long: {
-        type: String,
-        default: null
+  visitedAt: {
+    type: Date
+  },
+  nextVisit: {
+    nextVisitDate: {
+      type: Date,
+      default: null
+    },
+    notes: {
+      type: String,
+      default: null,
+      trim: true
+    },
+    currentVisitLocation: {
+        lat: {
+          type: String,
+          default: null
+        },
+        long: {
+          type: String,
+          default: null
+        }
       }
-    }
-},
+  },
 
 
   isNew : {
@@ -128,6 +127,10 @@ nextVisit: {
   category: {
     type: String 
   },
+  lastOrderRejected : {
+    type : Boolean,
+    default : false
+  }, 
   status: {
     type: Boolean,
     default: true
