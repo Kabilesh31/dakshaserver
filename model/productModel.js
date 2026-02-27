@@ -38,10 +38,12 @@ const productSchema = new mongoose.Schema({
       type : String
     },
     packing : {
-      type : String
+      type : String,
+      default : "1 X 1"
     },
     gst : {
-      type : Number
+      type : Number,
+      default : 0
     }, 
     createdBy: {
       type : String
