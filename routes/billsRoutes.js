@@ -1,6 +1,5 @@
-const express = require("express");
-const router = express.Router();
-const upload = require("../middleware/multer");
+    const express = require("express");
+    const router = express.Router();
 
 const {
   createBill,
@@ -14,20 +13,20 @@ const {
   updateOrderWithUpload
 } = require("../controllers/billsController");
 
-// POST create new bill
-router.post("/", createBill);
+    // POST create new bill
+    router.post("/", createBill);
 
-// GET all bills (optionally filtered by customerId)
-router.get("/", getBills);
+    // GET all bills (optionally filtered by customerId)
+    router.get("/", getBills);
 
-router.get("/:billId", getBillById);
-// PATCH change order status
-router.patch("/:billId/status", changeOrderStatus);
-router.put("/delivered/:id", upload.single("deliveryImage"), markHasDelivered );
+    router.get("/:billId", getBillById);
+    // PATCH change order status
+    router.patch("/:billId/status", changeOrderStatus);
+    router.put("/delivered/:id", markHasDelivered );
 
 router.patch("/:id/payment", updatePaymentStatus);
 router.get("/getBillsByStaff/:id", getBillsByStaff)
 router.get("/getBillsByDeliveryStaff/:id", getBillsByDeliveryStaff)
 router.patch("/:id/upload", upload.single("pdf"), updateOrderWithUpload)
 
-module.exports = router;
+    module.exports = router;
