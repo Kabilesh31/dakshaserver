@@ -11,12 +11,14 @@ const upload = multer({
       "image/png",
       "image/webp",
       "application/pdf",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel" 
     ];
 
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Only images and PDF allowed"), false);
+      cb(new Error("Only images, Excel and PDF allowed"), false);
     }
   },
 });

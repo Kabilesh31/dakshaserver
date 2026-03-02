@@ -5,6 +5,7 @@ const orderedProductSchema = new mongoose.Schema({
   productId: { type: String, required: true },
   value: { type: Number, required: true },
   qty: { type: Number, required: true },
+  productCode : {type : Number}
 });
 
 const billSchema = new mongoose.Schema(
@@ -74,9 +75,16 @@ const billSchema = new mongoose.Schema(
       ],
       default: "pending",
     },
-
-
-    createdBy: { type: String, required: true }, // staffId
+    billPdf : {
+      type : String
+    },
+    billPublicId: {
+      type: String, 
+    },
+    finalAmt : {
+      type : Number
+    },
+    createdBy: { type: String, required: true }, 
   },
   { timestamps: true }
 );
