@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 const Notification = require("../model/Notification");
 const socket = require("../socket");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
+const cloudinary = require("../config/cloudinary");
+const uploadToCloudinary2 = require("../utils/cloudinaryUpload2");
 
 exports.createBill = async (req, res) => {
   try {
@@ -512,3 +514,67 @@ exports.getBillsByDeliveryStaff = async (req, res) => {
   }
 };
 
+exports.updateOrderWithUpload = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { finalAmt } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "PDF file is required" });
+    }
+
+    if (!finalAmt) {
+      return res.status(400).json({ message: "Final amount is required" });
+    }
+
+    console.log("Mimetype:", req.file.mimetype);
+    console.log("Size:", req.file.size);
+
+    const bill = await Bill.findById(id);
+    if (!bill) {
+      return res.status(404).json({ message: "Bill not found" });
+    }
+
+    // 🔥 Delete old PDF if exists
+    if (bill.billPublicId) {
+      await cloudinary.uploader.destroy(bill.billPublicId);
+    }
+
+    // ✅ Upload as RAW (correct for PDFs)
+    const uploadResult = await uploadToCloudinary(
+      req.file.buffer,
+      "order_bills",
+      "raw",
+      `invoice_${bill._id}.pdf`   // 👈 force extension here
+    );
+
+    bill.finalAmt = Number(finalAmt);
+    bill.orderStatus = "approved";
+    bill.billPdf = uploadResult.secure_url;
+    bill.billPublicId = uploadResult.public_id;
+
+    await bill.save();
+
+    // ✅ Update Customer flags
+    await Customer.findByIdAndUpdate(bill.customerId, {
+      $set: {
+        orderPending: true,
+        lastOrderRejected: false,
+        waitingApprove: false,
+        paymentPending: !bill.paidStatus,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Order approved & PDF uploaded successfully",
+      data: bill,
+    });
+
+  } catch (error) {
+    console.error("Upload Error:", error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
