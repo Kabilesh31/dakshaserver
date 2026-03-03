@@ -514,8 +514,8 @@ exports.getBillsByDeliveryStaff = async (req, res) => {
 exports.updateOrderWithUpload = async (req, res) => {
   try {
     const { id } = req.params;
-    const { finalAmt } = req.body;
-
+    const { finalAmt, billId } = req.body;
+    
     if (!req.file) {
       return res.status(400).json({ message: "PDF file is required" });
     }
@@ -541,6 +541,7 @@ exports.updateOrderWithUpload = async (req, res) => {
     );
 
     bill.finalAmt = Number(finalAmt);
+    bill.billId = billId;
     bill.orderStatus = "approved";
     bill.billPdf = uploadResult.secure_url;
     bill.billPublicId = uploadResult.public_id;
