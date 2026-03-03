@@ -6,7 +6,8 @@ const streamifier = require("streamifier");
 const uploadToCloudinary2 = (
   fileBuffer,
   folder = "files",
-  resourceType = "raw" // ✅ default raw for PDFs
+  resourceType = "raw" 
+  
 ) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(

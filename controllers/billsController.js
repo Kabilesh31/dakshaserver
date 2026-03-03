@@ -85,11 +85,11 @@ exports.createBill = async (req, res) => {
     if (gst) {
       customerUpdate.gst = gst;
     }
-    if (!paidStatus) {
-    customerUpdate.$inc = {
-      paymentPendingAmount: totalAmt,
-    };
-}
+//     if (!paidStatus) {
+//     customerUpdate.$inc = {
+//       paymentPendingAmount: totalAmt,
+//     };
+// }
 
     await Customer.findByIdAndUpdate(customerId, customerUpdate, {
       new: true,
@@ -262,10 +262,7 @@ exports.changeOrderStatus = async (req, res) => {
 
     bill.orderStatus = orderStatus;
     await bill.save();
-
-    // ==========================
     // IF APPROVED → set flags
-    // ==========================
    if (orderStatus === "approved") {
   await Customer.findByIdAndUpdate(
     bill.customerId,
@@ -527,25 +524,20 @@ exports.updateOrderWithUpload = async (req, res) => {
       return res.status(400).json({ message: "Final amount is required" });
     }
 
-    console.log("Mimetype:", req.file.mimetype);
-    console.log("Size:", req.file.size);
-
     const bill = await Bill.findById(id);
     if (!bill) {
       return res.status(404).json({ message: "Bill not found" });
     }
 
-    // 🔥 Delete old PDF if exists
     if (bill.billPublicId) {
       await cloudinary.uploader.destroy(bill.billPublicId);
     }
 
-    // ✅ Upload as RAW (correct for PDFs)
     const uploadResult = await uploadToCloudinary(
       req.file.buffer,
       "order_bills",
       "raw",
-      `invoice_${bill._id}.pdf`   // 👈 force extension here
+      `invoice_${bill._id}.pdf`   
     );
 
     bill.finalAmt = Number(finalAmt);
@@ -555,13 +547,14 @@ exports.updateOrderWithUpload = async (req, res) => {
 
     await bill.save();
 
-    // ✅ Update Customer flags
+
     await Customer.findByIdAndUpdate(bill.customerId, {
       $set: {
         orderPending: true,
         lastOrderRejected: false,
         waitingApprove: false,
         paymentPending: !bill.paidStatus,
+        paymentPendingAmount : Number(finalAmt)
       },
     });
 
