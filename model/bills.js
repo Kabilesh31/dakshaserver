@@ -84,6 +84,9 @@ const billSchema = new mongoose.Schema(
     finalAmt : {
       type : Number
     },
+    billId : {
+      type : String
+    },
     createdBy: { type: String, required: true }, 
   },
   { timestamps: true }
