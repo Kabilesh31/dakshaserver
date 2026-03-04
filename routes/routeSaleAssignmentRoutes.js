@@ -9,6 +9,7 @@ const {
   completeRoute,  
   deleteAssignment,
   getCustomerByAssignedStaff
+  , getStaffRoutesByDate
 } = require("../controllers/RouteSaleAssignmentController")
 
 // assign route to staff
@@ -20,6 +21,7 @@ router.get("/", getAssignmentsByDate)
 router.delete("/:id", deleteAssignment);
 // staff – get today routes
 router.get("/staff/:staffId", getStaffRoutesToday)
+router.get("/staff/:staffId", getStaffRoutesByDate)
 
 // mark route completed
 router.put("/:id/complete", completeRoute)

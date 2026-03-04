@@ -5,51 +5,98 @@ const mongoose = require("mongoose");
 // Assign Route to Staff
 exports.assignRoute = async (req, res) => {
   try {
-    const { date, staffId, routeId, vehicleNo } = req.body
+    const { date, staffId, routeId, vehicleNo } = req.body;
 
     if (!date || !staffId || !routeId) {
       return res.status(400).json({
         message: "date, staffId and routeId are required"
-      })
-    }
-   
-    const routeAssigned = await RouteAssignment.findOne({ date, routeId })
-    if (routeAssigned) {
-      return res.status(400).json({
-        message: "Route already assigned for this date"
-      })
+      });
     }
 
-    // check staff route count (max 2)
+    // Validate date format (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) {
+      return res.status(400).json({
+        message: "Invalid date format. Use YYYY-MM-DD"
+      });
+    }
+
+    // 🚫 Prevent same route on same date
+    const existingRoute = await RouteAssignment.findOne({ date, routeId });
+    if (existingRoute) {
+      return res.status(400).json({
+        message: "Route already assigned for this date"
+      });
+    }
+
+    // 🚫 Prevent same vehicle on same date
+    if (vehicleNo) {
+      const existingVehicle = await RouteAssignment.findOne({
+        date,
+        vehicleNo
+      });
+
+      if (existingVehicle) {
+        return res.status(400).json({
+          message: "Vehicle already assigned for this date"
+        });
+      }
+    }
+
+    // 🚫 Max 2 routes per staff per date
     const staffCount = await RouteAssignment.countDocuments({
       date,
       staffId
-    })
+    });
 
     if (staffCount >= 2) {
       return res.status(400).json({
-        message: "Staff already has 2 routes today"
-      })
+        message: "Staff already has 2 routes on this date"
+      });
     }
 
-    // assign route
     const assignment = await RouteAssignment.create({
       date,
       staffId,
       routeId,
       vehicleNo
-    })
+    });
 
     res.status(201).json({
       message: "Route assigned successfully",
       data: assignment
-    })
+    });
+
   } catch (error) {
     res.status(500).json({
       message: error.message
-    })
+    });
   }
-}
+};
+exports.getStaffRoutesByDate = async (req, res) => {
+  try {
+    const { staffId } = req.params;
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({
+        message: "date query parameter required"
+      });
+    }
+
+    const routes = await RouteAssignment.find({
+      staffId,
+      date
+    }).populate("routeId", "routeName");
+
+    res.json(routes);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
 
 // DELETE /api/routeassign/:id
 exports.deleteAssignment = async (req, res) => {
