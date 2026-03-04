@@ -75,18 +75,6 @@ const billSchema = new mongoose.Schema(
       ],
       default: "pending",
     },
-    billPdf : {
-      type : String
-    },
-    billPublicId: {
-      type: String, 
-    },
-    finalAmt : {
-      type : Number
-    },
-    billId : {
-      type : String
-    },
     createdBy: { type: String, required: true }, 
   },
   { timestamps: true }
