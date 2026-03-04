@@ -5,8 +5,7 @@ const mongoose = require("mongoose");
 const Notification = require("../model/Notification");
 const socket = require("../socket");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
-const cloudinary = require("../config/cloudinary");
-const uploadToCloudinary2 = require("../utils/cloudinaryUpload2");
+
 
 exports.createBill = async (req, res) => {
   try {
@@ -85,11 +84,11 @@ exports.createBill = async (req, res) => {
     if (gst) {
       customerUpdate.gst = gst;
     }
-//     if (!paidStatus) {
-//     customerUpdate.$inc = {
-//       paymentPendingAmount: totalAmt,
-//     };
-// }
+    if (!paidStatus) {
+    customerUpdate.$inc = {
+      paymentPendingAmount: totalAmt,
+    };
+}
 
     await Customer.findByIdAndUpdate(customerId, customerUpdate, {
       new: true,
@@ -507,68 +506,6 @@ exports.getBillsByDeliveryStaff = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       message: err.message
-    });
-  }
-};
-
-exports.updateOrderWithUpload = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { finalAmt, billId } = req.body;
-    
-    if (!req.file) {
-      return res.status(400).json({ message: "PDF file is required" });
-    }
-
-    if (!finalAmt) {
-      return res.status(400).json({ message: "Final amount is required" });
-    }
-
-    const bill = await Bill.findById(id);
-    if (!bill) {
-      return res.status(404).json({ message: "Bill not found" });
-    }
-
-    if (bill.billPublicId) {
-      await cloudinary.uploader.destroy(bill.billPublicId);
-    }
-
-    const uploadResult = await uploadToCloudinary(
-      req.file.buffer,
-      "order_bills",
-      "raw",
-      `invoice_${bill._id}.pdf`   
-    );
-
-    bill.finalAmt = Number(finalAmt);
-    bill.billId = billId;
-    bill.orderStatus = "approved";
-    bill.billPdf = uploadResult.secure_url;
-    bill.billPublicId = uploadResult.public_id;
-
-    await bill.save();
-
-
-    await Customer.findByIdAndUpdate(bill.customerId, {
-      $set: {
-        orderPending: true,
-        lastOrderRejected: false,
-        waitingApprove: false,
-        paymentPending: !bill.paidStatus,
-        paymentPendingAmount : Number(finalAmt)
-      },
-    });
-
-    return res.status(200).json({
-      message: "Order approved & PDF uploaded successfully",
-      data: bill,
-    });
-
-  } catch (error) {
-    console.error("Upload Error:", error);
-    return res.status(500).json({
-      message: "Internal Server Error",
-      error: error.message,
     });
   }
 };

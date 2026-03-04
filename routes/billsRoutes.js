@@ -10,7 +10,6 @@ const {
   markHasDelivered,
   getBillsByStaff,
   getBillsByDeliveryStaff,
-  updateOrderWithUpload
 } = require("../controllers/billsController");
 
     // POST create new bill
@@ -27,6 +26,6 @@ const {
 router.patch("/:id/payment", updatePaymentStatus);
 router.get("/getBillsByStaff/:id", getBillsByStaff)
 router.get("/getBillsByDeliveryStaff/:id", getBillsByDeliveryStaff)
-router.patch("/:id/upload", upload.single("pdf"), updateOrderWithUpload)
+
 
     module.exports = router;
