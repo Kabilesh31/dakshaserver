@@ -10,11 +10,10 @@ exports.checkIn = async (req, res) => {
 
     const existing = await Attendance.findOne({ staffId, date: today });
 
-    // ✅ If already checked in, just return success
+    
     if (existing) {
-      return res.status(200).json({
-        message: "Already checked in today",
-        data: existing,
+      return res.status(400).json({
+        message: "Your Today Duty is Over",
       });
     }
 
