@@ -20,7 +20,7 @@ const protectAuth = require("../middleware/auth")
 
     router.get("/:billId",protectAuth.protectAny, getBillById);
     // PATCH change order status
-    router.patch("/:billId/status",protectAuth.protectAny, changeOrderStatus);
+    router.patch("/:billId/status", changeOrderStatus);
     router.put("/delivered/:id", protectAuth.protectAny, markHasDelivered );
 
 router.patch("/:id/payment",protectAuth.protectAny, updatePaymentStatus);

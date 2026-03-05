@@ -3,7 +3,7 @@ const router = express.Router();
 const upload = require("../middleware/multer");
 const staffController = require("../controllers/staffController");
 const protectController = require("../middleware/auth")
-router.get("/", staffController.getAllStaff);
+router.get("/", protectController.protectAny, staffController.getAllStaff);
 
 router.get("/:id", protectController.protectAny, staffController.getStaffById);
 router.post("/", protectController.protectAny, upload.single("img"), staffController.createStaff);
