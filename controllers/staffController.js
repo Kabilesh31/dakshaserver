@@ -35,8 +35,30 @@ exports.createStaff = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ error: error.message });
+  console.error("STAFF CREATE ERROR 👉", error);
+
+  // ✅ Duplicate key error (MongoDB)
+  if (error?.code === 11000) {
+    const field = Object.keys(error.keyValue)[0];
+    const value = error.keyValue[field];
+
+    return res.status(400).json({
+      message: `${field} ${value} already exists`,
+    });
   }
+
+  // ✅ Mongoose validation error
+  if (error.name === "ValidationError") {
+    const errors = Object.values(error.errors).map(e => e.message);
+    return res.status(400).json({
+      message: errors.join(", "),
+    });
+  }
+
+  return res.status(500).json({
+    message: error.message || "Something went wrong",
+  });
+}
 };
 
 

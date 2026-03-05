@@ -30,7 +30,16 @@
     }
   });
 
-  // Prevent duplicate route assignment per day
-  routeAssignmentSchema.index({ date: 1, routeId: 1 }, { unique: true });
+routeAssignmentSchema.index(
+  { date: 1, routeId: 1 },
+  { unique: true }
+);
+
+// ✅ Prevent same vehicle on same date
+routeAssignmentSchema.index(
+  { date: 1, vehicleNo: 1 },
+  { unique: true, sparse: true }
+);
+
 
   module.exports = mongoose.model("RouteAssignment", routeAssignmentSchema);
