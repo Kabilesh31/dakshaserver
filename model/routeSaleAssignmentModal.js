@@ -30,16 +30,10 @@
     }
   });
 
-// Prevent same route on same date
-routeSaleAssignmentSchema.index(
-  { date: 1, routeId: 1 },
-  { unique: true }
-);
+routeSaleAssignmentSchema.index({ date: 1, routeId: 1 }, { unique: true });
 
-// Prevent same vehicle on same date
-routeSaleAssignmentSchema.index(
-  { date: 1, vehicleNo: 1 },
-  { unique: true, sparse: true }
-);
+// 🚨 Prevent same vehicle being used by **different staff** on same date
+routeSaleAssignmentSchema.index({ date: 1, vehicleNo: 1, staffId: 1 }, { unique: true, sparse: true });
+
 
   module.exports = mongoose.model("RouteSaleAssignment", routeSaleAssignmentSchema);

@@ -35,11 +35,7 @@ routeAssignmentSchema.index(
   { unique: true }
 );
 
-// ✅ Prevent same vehicle on same date
-routeAssignmentSchema.index(
-  { date: 1, vehicleNo: 1 },
-  { unique: true, sparse: true }
-);
+
 
 
   module.exports = mongoose.model("RouteAssignment", routeAssignmentSchema);

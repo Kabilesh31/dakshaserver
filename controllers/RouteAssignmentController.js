@@ -21,45 +21,58 @@ exports.assignRoute = async (req, res) => {
       });
     }
 
-    // 🚫 Prevent same route on same date
-    const existingRoute = await RouteAssignment.findOne({ date, routeId });
-    if (existingRoute) {
+    // 1️⃣ Prevent same route on same date
+    const routeExists = await RouteAssignment.findOne({ date, routeId });
+    if (routeExists) {
       return res.status(400).json({
         message: "Route already assigned for this date"
       });
     }
 
-    // 🚫 Prevent same vehicle on same date
-    if (vehicleNo) {
-      const existingVehicle = await RouteAssignment.findOne({
-        date,
-        vehicleNo
-      });
+    // 2️⃣ Staff max 2 routes per date
+    const staffAssignments = await RouteAssignment.find({ date, staffId });
 
-      if (existingVehicle) {
-        return res.status(400).json({
-          message: "Vehicle already assigned for this date"
-        });
-      }
-    }
-
-    // 🚫 Max 2 routes per staff per date
-    const staffCount = await RouteAssignment.countDocuments({
-      date,
-      staffId
-    });
-
-    if (staffCount >= 2) {
+    if (staffAssignments.length >= 2) {
       return res.status(400).json({
         message: "Staff already has 2 routes on this date"
       });
     }
 
+    // 3️⃣ Vehicle validation (if vehicle provided)
+    if (vehicleNo) {
+      const vehicleAssignments = await RouteAssignment.find({
+        date,
+        vehicleNo
+      });
+
+      if (vehicleAssignments.length > 0) {
+        const allBelongToSameStaff = vehicleAssignments.every(
+          a => a.staffId.toString() === staffId
+        );
+
+        // ❌ If vehicle used by different staff
+        if (!allBelongToSameStaff) {
+          return res.status(400).json({
+            message: "Vehicle already assigned to another staff for this date"
+          });
+        }
+
+        // ❌ If vehicle already has 2 routes
+        if (vehicleAssignments.length >= 2) {
+          return res.status(400).json({
+            message: "Vehicle already has 2 routes for this date"
+          });
+        }
+      }
+    }
+
+    // 4️⃣ Create assignment
     const assignment = await RouteAssignment.create({
       date,
       staffId,
       routeId,
-      vehicleNo
+      vehicleNo,
+      status: "ASSIGNED"
     });
 
     res.status(201).json({
@@ -68,8 +81,9 @@ exports.assignRoute = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("Assign Route Error:", error);
     res.status(500).json({
-      message: error.message
+      message: "Internal Server Error"
     });
   }
 };
