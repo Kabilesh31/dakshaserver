@@ -12,13 +12,13 @@ router.patch("/updateMyPassword", authController.protect, authController.updateP
  
 router
     .route("/")
-    .get(userController.getAllUser)
-    .post(userController.createUser)
+    .get(authController.protect, userController.getAllUser)
+    .post(authController.protect, userController.createUser)
  
 router
     .route("/:id")
-    .get(userController.getUser)
-    .put(userController.updateUser)
+    .get(authController.protect, userController.getUser)
+    .put(authController.protect, userController.updateUser)
  
  
 module.exports = router

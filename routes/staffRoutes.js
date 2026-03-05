@@ -2,16 +2,15 @@ const express = require("express");
 const router = express.Router();
 const upload = require("../middleware/multer");
 const staffController = require("../controllers/staffController");
-
-// ✅ NO auth middleware here
+const protectController = require("../middleware/auth")
 router.get("/", staffController.getAllStaff);
 
-router.get("/:id", staffController.getStaffById);
-router.post("/", upload.single("img"), staffController.createStaff);
-router.put("/:id", upload.single("img"), staffController.updateStaff);
-router.patch("/:id/status", staffController.changeStaffStatus);
-router.patch("/:id/duty-status", staffController.changeDutyStatus);
-router.delete("/:id", staffController.softDeleteStaff);
-router.post("/:staffId/document", upload.single("file"), staffController.uploadStaffDocument);
+router.get("/:id", protectController.protectAny, staffController.getStaffById);
+router.post("/", protectController.protectAny, upload.single("img"), staffController.createStaff);
+router.put("/:id", protectController.protectAny, upload.single("img"), staffController.updateStaff);
+router.patch("/:id/status", protectController.protectAny, staffController.changeStaffStatus);
+router.patch("/:id/duty-status", protectController.protectAny, staffController.changeDutyStatus);
+router.delete("/:id", protectController.protectAny, staffController.softDeleteStaff);
+router.post("/:staffId/document", protectController.protectAny, upload.single("file"), staffController.uploadStaffDocument);
 
 module.exports = router;

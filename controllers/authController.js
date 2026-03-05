@@ -10,7 +10,7 @@ const signInToken = id => {
     return jwt.sign({id},process.env.JWT_SECRET,{expiresIn: process.env.JWT_SECRET_EXPIRESIN})
 }
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, sessionToken, statusCode, res) => {
     const token = signInToken(user._id)
     const cookieOptions = {
         expires : new Date( Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60* 1000),
@@ -26,6 +26,7 @@ const createSendToken = (user, statusCode, res) => {
         res.status(statusCode).json({
             status: "Success",
             token,
+            sessionToken,
             data: user
         })
 }
@@ -51,40 +52,49 @@ exports.login = catchAsync (async (req,res, next) => {
         return next(new AppError("Incorrect Email or Password"), 401)
     }
 
-    // 3. if Ok send the Token to Client
-    createSendToken(user, 200, res)
-    // const token = signInToken(user._id)
-    // res.status(201).json({
-    //     status:"Success",
-    //     token
-    // })
+    // generate Session token 
+    const sessionToken = crypto.randomBytes(32).toString("hex")
+
+    user.sessionToken = sessionToken
+    await user.save({validateBeforeSave:false})
+
+    createSendToken(user, sessionToken, 200, res)
 })
 
 exports.protect = catchAsync(async(req, res, next)=> {
-    //  Getting Token and Check its there
+
     let token;
+
     if(req.headers.authorization && req.headers.authorization.startsWith("Bearer")){
         token = req.headers.authorization.split(' ')[1];
-    } 
+    }
+
     if(!token){
         return next(new AppError("You are Not Login! Please Login to get Access", 401))
     }
-    // Verify Token 
+
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
-    
-    // 3 Check if User STill Exist
+
     const currentUser = await User.findById(decoded.id)
+
     if(!currentUser){
-        return next( new AppError("The user belonging to this tokn does no Longer Exist", 401))
+        return next(new AppError("User no longer exists",401))
     }
-    // 4 if user Changed the Password After the token Was Issued
+
+    const clientSessionToken = req.headers["session-token"]
+
+    if(currentUser.sessionToken !== clientSessionToken){
+        return next(new AppError("Logged in from another device",401))
+    }
+
     if(currentUser.changedPasswordAfter(decoded.iat)){
-        return next( new AppError("User Recently Changed Password! Please Login Again"))
+        return next(new AppError("User recently changed password",401))
     }
-    
+
     req.user = currentUser;
     next()
 })
+
 
 exports.requestTo = (...roles) => {
     return (req, res, next) => {
