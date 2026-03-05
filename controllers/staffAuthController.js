@@ -50,6 +50,7 @@ exports.staffLoginWithEmail = async (req, res) => {
         staffStatus: staff.staffStatus,
         dutyStatus: staff.dutyStatus,
         img: staff.img,
+        attendance :staff.attendance
       },
     });
 
