@@ -12,7 +12,6 @@ exports.assignRoute = async (req, res) => {
       });
     }
 
-    // Validate date format
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(date)) {
       return res.status(400).json({
@@ -20,7 +19,7 @@ exports.assignRoute = async (req, res) => {
       });
     }
 
-    // 🚫 Prevent duplicate route on same date
+    // 🚫 1️⃣ Route can be assigned only once per date
     const existingRoute = await RouteSaleAssignment.findOne({ date, routeId });
     if (existingRoute) {
       return res.status(400).json({
@@ -28,21 +27,7 @@ exports.assignRoute = async (req, res) => {
       });
     }
 
-    // 🚫 Prevent duplicate vehicle on same date
-    if (vehicleNo) {
-      const existingVehicle = await RouteSaleAssignment.findOne({
-        date,
-        vehicleNo
-      });
-
-      if (existingVehicle) {
-        return res.status(400).json({
-          message: "Vehicle already assigned for this date"
-        });
-      }
-    }
-
-    // 🚫 Max 2 routes per staff per date
+    // 🚫 2️⃣ Staff max 2 routes per date
     const staffCount = await RouteSaleAssignment.countDocuments({
       date,
       staffId
@@ -52,6 +37,32 @@ exports.assignRoute = async (req, res) => {
       return res.status(400).json({
         message: "Staff already has 2 routes on this date"
       });
+    }
+
+    // 🚫 3️⃣ Vehicle rules
+    if (vehicleNo) {
+      const vehicleAssignments = await RouteSaleAssignment.find({
+        date,
+        vehicleNo
+      });
+
+      if (vehicleAssignments.length > 0) {
+        const assignedStaffId = vehicleAssignments[0].staffId.toString();
+
+        // ❌ If vehicle already used by different staff
+        if (assignedStaffId !== staffId.toString()) {
+          return res.status(400).json({
+            message: "Vehicle already assigned to another staff for this date"
+          });
+        }
+
+        // ❌ If same staff already has 2 routes with same vehicle
+        if (vehicleAssignments.length >= 2) {
+          return res.status(400).json({
+            message: "Vehicle already used for 2 routes by this staff"
+          });
+        }
+      }
     }
 
     const assignment = await RouteSaleAssignment.create({
