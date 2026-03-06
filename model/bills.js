@@ -5,7 +5,7 @@ const orderedProductSchema = new mongoose.Schema({
   productId: { type: String, required: true },
   value: { type: Number, required: true },
   qty: { type: Number, required: true },
-  productCode : {type : String}
+  productCode : {type : Number, required : true}
 });
 
 const billSchema = new mongoose.Schema(
