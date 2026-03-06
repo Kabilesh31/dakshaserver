@@ -6,7 +6,6 @@ const Notification = require("../model/Notification");
 const socket = require("../socket");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
 
-
 exports.createBill = async (req, res) => {
   try {
     let {
@@ -70,6 +69,7 @@ exports.createBill = async (req, res) => {
 
     const customerUpdate = {
       lastOrderDate: new Date(),
+      isVisited : true,
       waitingApprove : true,
       nextVisit: {
         nextVisitDate: null,
