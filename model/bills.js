@@ -64,6 +64,10 @@ const billSchema = new mongoose.Schema(
     orderNotes : {
       type : String
     },
+    deliveredAt  : {
+      type : Date,
+      default : null
+    },
     orderStatus: {
       type: String,
       enum: [

@@ -70,6 +70,7 @@ exports.createBill = async (req, res) => {
     const customerUpdate = {
       lastOrderDate: new Date(),
       isVisited : true,
+      visitedAt : new Date(),
       waitingApprove : true,
       nextVisit: {
         nextVisitDate: null,
@@ -263,19 +264,19 @@ exports.changeOrderStatus = async (req, res) => {
     await bill.save();
     // IF APPROVED → set flags
    if (orderStatus === "approved") {
-  await Customer.findByIdAndUpdate(
-    bill.customerId,
-    {
-      $set: {
-        orderPending: true,
-        lastOrderRejected : false,
-        waitingApprove: false,
-        paymentPending: !bill.paidStatus,
+    await Customer.findByIdAndUpdate(
+      bill.customerId,
+      {
+        $set: {
+          orderPending: true,
+          lastOrderRejected : false,
+          waitingApprove: false,
+          paymentPending: !bill.paidStatus,
+        },
       },
-    },
-    { new: true }
-  );
-}
+      { new: true }
+    );
+  }
 
 
     if (orderStatus === "rejected") {
@@ -373,7 +374,8 @@ exports.markHasDelivered = async(req, res) => {
 
     const bill = await Bill.findOne({
       customerId: id,
-      orderStatus: "approved"
+      orderStatus: "approved",
+      deliveredAt : new Date()
     });
 
     if(!bill) {
@@ -487,7 +489,7 @@ exports.getBillsByStaff = async (req, res) => {
 exports.getBillsByDeliveryStaff = async (req, res) => {
   try {
     const {id} = req.params;
-   
+    
     const bills = await Bill.find({
       deliveredBy: id
     });

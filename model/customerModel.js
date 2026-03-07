@@ -104,8 +104,6 @@ phone2: {
         }
       }
   },
-
-
   isNew : {
     type : Boolean,
     default : true
