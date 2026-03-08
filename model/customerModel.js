@@ -72,6 +72,10 @@ phone2: {
   lastOrderDate: {
     type: Date
   },
+  recentOrderId : {
+    type: String, 
+    default : null
+  },
   isVisited: {
     type: Boolean,
     default: false
