@@ -72,6 +72,7 @@ exports.createBill = async (req, res) => {
       isVisited : true,
       visitedAt : new Date(),
       waitingApprove : true,
+      recentOrderId: bill._id, 
       nextVisit: {
         nextVisitDate: null,
         notes: null,
