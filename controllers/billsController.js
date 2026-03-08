@@ -374,8 +374,7 @@ exports.markHasDelivered = async(req, res) => {
 
     const bill = await Bill.findOne({
       customerId: id,
-      orderStatus: "approved",
-      deliveredAt : new Date()
+      orderStatus: "approved"
     });
 
     if(!bill) {
