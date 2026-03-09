@@ -46,11 +46,11 @@ const billSchema = new mongoose.Schema(
       type : Date,
       default : null
     },
-      deliveryPersonId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Staff", // change if needed
-      default: null,
-    },
+
+    deliveryPersonId: {
+    type: String,
+    default: null,
+  },
 
     deliveryLocation: {
       latitude: { type: Number },
