@@ -361,9 +361,10 @@ exports.markHasDelivered = async(req, res) => {
   
   try{
     // Parse deliveryLocation if it's sent as string
-    const locationData = typeof deliveryLocation === 'string' 
-      ? JSON.parse(deliveryLocation) 
-      : deliveryLocation;
+    const locationData =
+      typeof deliveryLocation === "string"
+        ? JSON.parse(deliveryLocation)
+        : deliveryLocation;
 
     let deliveryImageUrl = "";
 
@@ -385,11 +386,15 @@ exports.markHasDelivered = async(req, res) => {
       });
     }
 
+    
     bill.orderStatus = "delivered";
     bill.deliveredAt = new Date();
     bill.deliveredBy = deliveredBy;                    
     bill.deliveryPersonId = deliveryPersonId;         
-    bill.deliveryLocation = locationData;              
+    bill.deliveryLocation = {
+      latitude: locationData.lat,
+      longitude: locationData.long,
+    };             
     bill.deliveryImage = deliveryImageUrl;            
 
     await bill.save();
