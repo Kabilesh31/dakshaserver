@@ -496,7 +496,7 @@ exports.getBillsByDeliveryStaff = async (req, res) => {
     const {id} = req.params;
     
     const bills = await Bill.find({
-      deliveredBy: id
+      deliveryPersonId: id
     });
 
     if (!bills.length) {
