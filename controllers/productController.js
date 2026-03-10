@@ -149,7 +149,7 @@ exports.importProducts = async(req, res) => {
       };
     });
 
-    // 🚀 Recommended: Upsert instead of insertMany
+    
     for (const product of products) {
       await Product.updateOne(
         { productCode: product.productCode },
@@ -168,3 +168,94 @@ exports.importProducts = async(req, res) => {
     res.status(500).json({ message: error.message });
   }
 }
+exports.assignFocusProduct = async (req, res) => {
+  try {
+    console.log("=== Assign Focus Product Debug ===");
+    console.log("Product ID:", req.params.id);
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID format",
+      });
+    }
+
+    const updatedProduct = await Product.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        isDeleted: { $ne: true },
+      },
+      {
+        $set: { focusProduct: true },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found or deleted",
+      });
+    }
+
+    console.log("Focus updated:", updatedProduct.focusProduct);
+
+    res.status(200).json({
+      success: true,
+      message: "Product marked as focus",
+      data: updatedProduct,
+    });
+  } catch (error) {
+    console.error("Focus assign error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+exports.unassignFocusProduct = async (req, res) => {
+  try {
+    const updatedProduct = await Product.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        isDeleted: { $ne: true },
+      },
+      {
+        $set: { focusProduct: false },
+      },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Product removed from focus",
+      data: updatedProduct,
+    });
+  } catch (error) {
+    console.error("Focus remove error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+exports.getFocusProducts = async (req, res) => {
+  try {
+    const products = await Product.find({
+      focusProduct: true,
+      isDeleted: false
+    });
+
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
