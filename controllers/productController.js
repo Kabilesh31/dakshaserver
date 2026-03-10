@@ -168,6 +168,22 @@ exports.importProducts = async(req, res) => {
     res.status(500).json({ message: error.message });
   }
 }
+
+exports.getProductBrands = async(req, res) => {
+  try{
+    const data = await Product.distinct("brand");
+    res.status(200).json({
+      message : "Success",
+      data : data
+    })
+  }catch(err){
+     res.status(500).json({
+      message: "Error fetching brands",
+      error: err.message
+    });
+  }
+}
+
 exports.assignFocusProduct = async (req, res) => {
   try {
     console.log("=== Assign Focus Product Debug ===");

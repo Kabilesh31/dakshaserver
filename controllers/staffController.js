@@ -286,3 +286,48 @@ exports.changeDutyStatus = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.assignBrands = async(req, res) => {
+try {
+    const { assignedBrands } = req.body;
+
+    if (!Array.isArray(assignedBrands)) {
+      return res.status(400).json({
+        success: false,
+        message: 'assignedBrands must be an array'
+      });
+    }
+
+    const staff = await Staff.findByIdAndUpdate(
+      req.params.id,
+      { 
+        assignedBrands: assignedBrands,
+      },
+      { 
+        new: true, 
+        runValidators: true 
+      }
+    ).select('-password');
+
+    if (!staff) {
+      return res.status(404).json({
+        success: false,
+        message: 'Staff not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Brands assigned successfully',
+      data: staff
+    });
+  } catch (error) {
+    console.error('Error assigning brands:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error assigning brands',
+      error: error.message
+    });
+  }
+}
+

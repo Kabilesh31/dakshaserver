@@ -15,6 +15,7 @@ router.put("/unfocus/:id", protectController.protectAny, productController.unass
 // Generic routes
 router.post("/", upload.single("img"), productController.createProduct);
 router.get("/", protectController.protectAny, productController.getProducts);
+router.get("/brands", productController.getProductBrands)
 router.get("/:id", protectController.protectAny, productController.getProductById);
 router.put("/:id", upload.single("img"), productController.updateProduct);
 router.delete("/:id", productController.deleteProduct);

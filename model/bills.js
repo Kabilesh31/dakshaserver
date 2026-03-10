@@ -16,19 +16,15 @@ const billSchema = new mongoose.Schema(
       ref: "Customer",
       required: true,
     },
-
     orderedProducts: {
       type: [orderedProductSchema],
       required: true,
     },
-
     totalAmt: { type: Number, required: true },
-
     paidStatus: {
       type: Boolean,
       default: false,
     },
-
     paymentMethod: {
       type: String,
       enum: ["Cash", "UPI", "CHEQUE", null],
@@ -46,17 +42,14 @@ const billSchema = new mongoose.Schema(
       type : Date,
       default : null
     },
-
     deliveryPersonId: {
-    type: String,
-    default: null,
-  },
-
+      type: String,
+      default: null,
+    },
     deliveryLocation: {
       latitude: { type: Number },
       longitude: { type: Number },
     },
-
     deliveryImage: {
       type: String,
       default: null,

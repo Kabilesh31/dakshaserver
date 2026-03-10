@@ -12,5 +12,5 @@ router.patch("/:id/status", protectController.protectAny, staffController.change
 router.patch("/:id/duty-status", protectController.protectAny, staffController.changeDutyStatus);
 router.delete("/:id", protectController.protectAny, staffController.softDeleteStaff);
 router.post("/:staffId/document", protectController.protectAny, upload.single("file"), staffController.uploadStaffDocument);
-
+router.put("/:id/assign-brands", staffController.assignBrands)
 module.exports = router;
