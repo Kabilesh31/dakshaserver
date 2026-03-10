@@ -101,7 +101,11 @@ endedAt: {
   tokenVersion: {
   type: Number,
   default: 0
-}
+},
+assignedBrands: [{
+    type: String,
+    trim: true
+  }],
 });
 
 staffSchema.pre("save", async function (next) {
