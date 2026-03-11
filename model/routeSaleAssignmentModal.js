@@ -36,12 +36,6 @@ routeSaleAssignmentSchema.index(
   { unique: true }
 );
 
-// Vehicle unique per date (only 1 staff can use it)
-routeSaleAssignmentSchema.index(
-  { date: 1, vehicleNo: 1 },
-  { sparse: true }
-);
-
 
 
 

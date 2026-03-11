@@ -19,49 +19,39 @@ exports.assignRoute = async (req, res) => {
       });
     }
 
-    // 🚫 1️⃣ Route can be assigned only once per date
+    // 1️⃣ Route only once per date
     const existingRoute = await RouteSaleAssignment.findOne({ date, routeId });
+
     if (existingRoute) {
       return res.status(400).json({
         message: "Route already assigned for this date"
       });
     }
 
-    // 🚫 2️⃣ Staff max 2 routes per date
-    const staffCount = await RouteSaleAssignment.countDocuments({
+    // 2️⃣ Staff maximum 2 routes per day
+    const staffRouteCount = await RouteSaleAssignment.countDocuments({
       date,
       staffId
     });
 
-    if (staffCount >= 2) {
+    if (staffRouteCount >= 2) {
       return res.status(400).json({
-        message: "Staff already has 2 routes on this date"
+        message: "Staff can only have 2 routes per date"
       });
     }
 
-    // 🚫 3️⃣ Vehicle rules
+    // 3️⃣ Vehicle only for one staff
     if (vehicleNo) {
-      const vehicleAssignments = await RouteSaleAssignment.find({
+      const vehicleUsedByOther = await RouteSaleAssignment.findOne({
         date,
-        vehicleNo
+        vehicleNo,
+        staffId: { $ne: staffId }
       });
 
-      if (vehicleAssignments.length > 0) {
-        const assignedStaffId = vehicleAssignments[0].staffId.toString();
-
-        // ❌ If vehicle already used by different staff
-        if (assignedStaffId !== staffId.toString()) {
-          return res.status(400).json({
-            message: "Vehicle already assigned to another staff for this date"
-          });
-        }
-
-        // ❌ If same staff already has 2 routes with same vehicle
-        if (vehicleAssignments.length >= 2) {
-          return res.status(400).json({
-            message: "Vehicle already used for 2 routes by this staff"
-          });
-        }
+      if (vehicleUsedByOther) {
+        return res.status(400).json({
+          message: "Vehicle already assigned to another staff"
+        });
       }
     }
 
@@ -78,8 +68,10 @@ exports.assignRoute = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("Assign Route Error:", error);
+
     res.status(500).json({
-      message: error.message
+      message: "Server error"
     });
   }
 };
