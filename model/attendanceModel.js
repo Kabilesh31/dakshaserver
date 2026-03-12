@@ -40,7 +40,7 @@ const attendanceSchema = new mongoose.Schema(
   },
   {
     timestamps: true, // adds createdAt & updatedAt automatically
-  }
+  },
 );
 
 module.exports = mongoose.model("Attendance", attendanceSchema);

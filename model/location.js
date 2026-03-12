@@ -51,7 +51,7 @@ const locationSchema = new mongoose.Schema(
   },
   {
     timestamps: true, // createdAt, updatedAt
-  }
+  },
 );
 
 /* Compound index for fast latest-location queries */

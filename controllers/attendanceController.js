@@ -10,7 +10,6 @@ exports.checkIn = async (req, res) => {
 
     const existing = await Attendance.findOne({ staffId, date: today });
 
-    
     if (existing) {
       return res.status(400).json({
         message: "Your Today Duty is Over",
@@ -41,7 +40,6 @@ exports.checkIn = async (req, res) => {
   }
 };
 
-
 // staff check-out
 exports.checkOut = async (req, res) => {
   try {
@@ -64,7 +62,6 @@ exports.checkOut = async (req, res) => {
     attendance.currentStatus = "checked-out";
     await attendance.save();
 
-    // ✅ UPDATE STAFF ATTENDANCE STATUS
     await Staff.findByIdAndUpdate(staffId, {
       attendance: false,
     });
@@ -116,7 +113,6 @@ const scheduleAutoCheckout = async (attendanceId, staffId) => {
         attendance.currentStatus = "checked-out";
         await attendance.save();
 
-        // ✅ Update staff attendance to false
         await Staff.findByIdAndUpdate(staffId, {
           attendance: false,
         });

@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 
-
 const staffSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -81,35 +80,36 @@ const staffSchema = new mongoose.Schema({
     default: false,
   },
   startedAt: {
-  type: Date,
-  default: null,
-},
+    type: Date,
+    default: null,
+  },
 
-endedAt: {
-  type: Date,
-  default: null,
-},
+  endedAt: {
+    type: Date,
+    default: null,
+  },
   attendance: {
-  type: Boolean,
-  default: null
-},
+    type: Boolean,
+    default: null,
+  },
 
   createdAt: {
     type: Date,
     default: Date.now,
   },
   tokenVersion: {
-  type: Number,
-  default: 0
-},
-assignedBrands: [{
-    type: String,
-    trim: true
-  }],
+    type: Number,
+    default: 0,
+  },
+  assignedBrands: [
+    {
+      type: String,
+      trim: true,
+    },
+  ],
 });
 
 staffSchema.pre("save", async function (next) {
- 
   if (!this.isModified("password")) {
     return next();
   }
@@ -117,6 +117,5 @@ staffSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
-
 
 module.exports = mongoose.model("Staff", staffSchema);

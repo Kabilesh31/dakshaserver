@@ -20,7 +20,9 @@ const timeAgo = (date) => {
 // GET all notifications (no protection, for testing)
 exports.getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({}).sort({ createdAt: -1 }).lean();
+    const notifications = await Notification.find({})
+      .sort({ createdAt: -1 })
+      .lean();
 
     const data = notifications.map((n) => ({
       ...n,

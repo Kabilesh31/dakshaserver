@@ -1,6 +1,6 @@
 // controllers/routeAssignmentController.js
-const RouteAssignment = require("../model/routeAssignmentModal")
-const Customer = require("../model/customerModel")
+const RouteAssignment = require("../model/routeAssignmentModal");
+const Customer = require("../model/customerModel");
 const mongoose = require("mongoose");
 // Assign Route to Staff
 exports.assignRoute = async (req, res) => {
@@ -9,7 +9,7 @@ exports.assignRoute = async (req, res) => {
 
     if (!date || !staffId || !routeId) {
       return res.status(400).json({
-        message: "date, staffId and routeId are required"
+        message: "date, staffId and routeId are required",
       });
     }
 
@@ -17,73 +17,66 @@ exports.assignRoute = async (req, res) => {
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(date)) {
       return res.status(400).json({
-        message: "Invalid date format. Use YYYY-MM-DD"
+        message: "Invalid date format. Use YYYY-MM-DD",
       });
     }
 
-    // 1️⃣ Prevent same route on same date
     const routeExists = await RouteAssignment.findOne({ date, routeId });
     if (routeExists) {
       return res.status(400).json({
-        message: "Route already assigned for this date"
+        message: "Route already assigned for this date",
       });
     }
 
-    // 2️⃣ Staff max 2 routes per date
     const staffAssignments = await RouteAssignment.find({ date, staffId });
 
     if (staffAssignments.length >= 2) {
       return res.status(400).json({
-        message: "Staff already has 2 routes on this date"
+        message: "Staff already has 2 routes on this date",
       });
     }
 
-    // 3️⃣ Vehicle validation (if vehicle provided)
     if (vehicleNo) {
       const vehicleAssignments = await RouteAssignment.find({
         date,
-        vehicleNo
+        vehicleNo,
       });
 
       if (vehicleAssignments.length > 0) {
         const allBelongToSameStaff = vehicleAssignments.every(
-          a => a.staffId.toString() === staffId
+          (a) => a.staffId.toString() === staffId,
         );
 
-        // ❌ If vehicle used by different staff
         if (!allBelongToSameStaff) {
           return res.status(400).json({
-            message: "Vehicle already assigned to another staff for this date"
+            message: "Vehicle already assigned to another staff for this date",
           });
         }
 
-        // ❌ If vehicle already has 2 routes
         if (vehicleAssignments.length >= 2) {
           return res.status(400).json({
-            message: "Vehicle already has 2 routes for this date"
+            message: "Vehicle already has 2 routes for this date",
           });
         }
       }
     }
 
-    // 4️⃣ Create assignment
     const assignment = await RouteAssignment.create({
       date,
       staffId,
       routeId,
       vehicleNo,
-      status: "ASSIGNED"
+      status: "ASSIGNED",
     });
 
     res.status(201).json({
       message: "Route assigned successfully",
-      data: assignment
+      data: assignment,
     });
-
   } catch (error) {
     console.error("Assign Route Error:", error);
     res.status(500).json({
-      message: "Internal Server Error"
+      message: "Internal Server Error",
     });
   }
 };
@@ -94,20 +87,19 @@ exports.getStaffRoutesByDate = async (req, res) => {
 
     if (!date) {
       return res.status(400).json({
-        message: "date query parameter required"
+        message: "date query parameter required",
       });
     }
 
     const routes = await RouteAssignment.find({
       staffId,
-      date
+      date,
     }).populate("routeId", "routeName");
 
     res.json(routes);
-
   } catch (error) {
     res.status(500).json({
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -130,7 +122,6 @@ exports.deleteAssignment = async (req, res) => {
   }
 };
 
-
 // GET ALL ASSIGNED ROUTES BY DATE (ADMIN)
 exports.getAssignmentsByDate = async (req, res) => {
   try {
@@ -150,39 +141,38 @@ exports.getAssignmentsByDate = async (req, res) => {
 // GET STAFF ROUTES FOR TODAY (STAFF APP)
 exports.getStaffRoutesToday = async (req, res) => {
   try {
-    const { staffId } = req.params
-    const today = new Date().toISOString().slice(0, 10)
+    const { staffId } = req.params;
+    const today = new Date().toISOString().slice(0, 10);
 
     const routes = await RouteAssignment.find({
       staffId,
-      date: today
-    }).populate("routeId", "routeName")
+      date: today,
+    }).populate("routeId", "routeName");
 
-    res.json(routes)
+    res.json(routes);
   } catch (error) {
     res.status(500).json({
-      message: error.message
-    })
+      message: error.message,
+    });
   }
-}
+};
 
 // MARK ROUTE COMPLETED
 exports.completeRoute = async (req, res) => {
   try {
-    const { id } = req.params
+    const { id } = req.params;
 
     await RouteAssignment.findByIdAndUpdate(id, {
-      status: "COMPLETED"
-    })
+      status: "COMPLETED",
+    });
 
-    res.json({ message: "Route marked as completed" })
+    res.json({ message: "Route marked as completed" });
   } catch (error) {
     res.status(500).json({
-      message: error.message
-    })
+      message: error.message,
+    });
   }
-}
-
+};
 
 exports.getCustomerByAssignedStaff = async (req, res) => {
   try {
@@ -192,19 +182,17 @@ exports.getCustomerByAssignedStaff = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(staffId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid staffId"
+        message: "Invalid staffId",
       });
     }
 
     const staffObjectId = new mongoose.Types.ObjectId(staffId);
 
-
     const routeQuery = { staffId: staffObjectId };
     if (date) routeQuery.date = date;
 
-    const assignments = await RouteAssignment
-      .find(routeQuery)
-      .select("routeId");
+    const assignments =
+      await RouteAssignment.find(routeQuery).select("routeId");
 
     if (!assignments.length) {
       return res.status(200).json({
@@ -212,18 +200,16 @@ exports.getCustomerByAssignedStaff = async (req, res) => {
         message: date
           ? "No routes assigned for this day"
           : "No routes assigned till now",
-        customers: []
+        customers: [],
       });
     }
 
+    const routeIds = assignments.map((a) => a.routeId);
 
-    const routeIds = assignments.map(a => a.routeId);
-
-   
     const customers = await Customer.find({
       routeId: { $in: routeIds },
       isDeleted: false,
-      status: true
+      status: true,
     })
       .populate("routeId", "routeName")
       .sort({ lineNo: 1 });
@@ -232,14 +218,13 @@ exports.getCustomerByAssignedStaff = async (req, res) => {
       success: true,
       message: "Customers fetched successfully",
       totalCustomers: customers.length,
-      customers
+      customers,
     });
-
   } catch (error) {
     console.error("Assigned Customers Error:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error"
+      message: "Internal Server Error",
     });
   }
 };

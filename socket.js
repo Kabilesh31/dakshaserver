@@ -1,6 +1,6 @@
 const { saveLocation } = require("./services/location.service");
 
-let ioInstance; // 🔥 store io globally
+let ioInstance; //  store io globally
 
 module.exports = (io) => {
   ioInstance = io; // save instance
@@ -32,15 +32,14 @@ module.exports = (io) => {
   });
 };
 
-// 🔥 NEW FUNCTION FOR NOTIFICATIONS
+//  NEW FUNCTION FOR NOTIFICATIONS
 module.exports.sendNotification = (notification) => {
   if (!ioInstance) {
     console.log("❌ Socket not initialized");
     return;
   }
 
-  console.log("🔥 Emitting notification:", notification._id);
+  console.log(" Emitting notification:", notification._id);
 
   ioInstance.emit("newNotification", notification);
 };
-

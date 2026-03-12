@@ -5,13 +5,13 @@ const orderedProductSchema = new mongoose.Schema({
   productId: { type: String, required: true },
   value: { type: Number, required: true },
   qty: { type: Number, required: true },
-  productCode : {type : Number}
+  productCode: { type: Number },
 });
 
 const billSchema = new mongoose.Schema(
   {
     customerName: { type: String, required: true },
-     customerId: {
+    customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
       required: true,
@@ -30,17 +30,17 @@ const billSchema = new mongoose.Schema(
       enum: ["Cash", "UPI", "CHEQUE", null],
       default: null,
     },
-    paymentCollectedBy : {
-      type : String,
-      default : null
+    paymentCollectedBy: {
+      type: String,
+      default: null,
     },
-    deliveredBy : {
-      type : String,
-      default : null
+    deliveredBy: {
+      type: String,
+      default: null,
     },
-    paymentCollectedAt : {
-      type : Date,
-      default : null
+    paymentCollectedAt: {
+      type: Date,
+      default: null,
     },
     deliveryPersonId: {
       type: String,
@@ -54,27 +54,27 @@ const billSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    orderNotes : {
-      type : String
+    orderNotes: {
+      type: String,
     },
-    deliveredAt  : {
-      type : Date,
-      default : null
+    deliveredAt: {
+      type: Date,
+      default: null,
     },
     orderStatus: {
       type: String,
       enum: [
         "pending",
         "approved",
-        "rejected",          
-        "out for delivery",  
+        "rejected",
+        "out for delivery",
         "delivered",
       ],
       default: "pending",
     },
-    createdBy: { type: String, required: true }, 
+    createdBy: { type: String, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.models.Bill || mongoose.model("Bill", billSchema);

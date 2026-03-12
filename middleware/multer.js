@@ -12,7 +12,7 @@ const upload = multer({
       "image/webp",
       "application/pdf",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.ms-excel" 
+      "application/vnd.ms-excel",
     ];
 
     if (allowedTypes.includes(file.mimetype)) {

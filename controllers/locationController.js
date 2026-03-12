@@ -98,7 +98,6 @@ exports.getLatestStaffLocation = async (req, res) => {
       isOnline: location.isOnline,
       updatedAt: location.updatedAt,
     });
-
   } catch (error) {
     console.error("❌ LOCATION FETCH ERROR:", error);
 
@@ -149,7 +148,6 @@ exports.getLatestStaffLocation = async (req, res) => {
       isOnline: location.isOnline,
       updatedAt: location.updatedAt,
     });
-
   } catch (error) {
     console.error("❌ LOCATION FETCH ERROR:", error);
 

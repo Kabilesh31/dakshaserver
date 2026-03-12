@@ -7,10 +7,7 @@ exports.createProduct = async (req, res) => {
     let imageUrl = "";
 
     if (req.file) {
-      const result = await uploadToCloudinary(
-        req.file.buffer,
-        "products"
-      );
+      const result = await uploadToCloudinary(req.file.buffer, "products");
       imageUrl = result.secure_url;
     }
 
@@ -27,7 +24,6 @@ exports.createProduct = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // get all products
 
@@ -64,18 +60,13 @@ exports.updateProduct = async (req, res) => {
     const updateData = { ...req.body };
 
     if (req.file) {
-      const result = await uploadToCloudinary(
-        req.file.buffer,
-        "products"
-      );
+      const result = await uploadToCloudinary(req.file.buffer, "products");
       updateData.img = result.secure_url;
     }
 
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    );
+    const product = await Product.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+    });
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
@@ -90,14 +81,13 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-
 // softdelete
 exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       { isDeleted: true },
-      { new: true }
+      { new: true },
     );
 
     if (!product) {
@@ -112,8 +102,8 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-exports.importProducts = async(req, res) => {
-   try {
+exports.importProducts = async (req, res) => {
+  try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
@@ -123,10 +113,9 @@ exports.importProducts = async(req, res) => {
 
     const sheetName = workbook.SheetNames[0];
 
-    const sheetData = XLSX.utils.sheet_to_json(
-      workbook.Sheets[sheetName],
-      { defval: "" }
-    );
+    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+      defval: "",
+    });
 
     const products = sheetData.map((row) => {
       const normalizedRow = {};
@@ -149,12 +138,11 @@ exports.importProducts = async(req, res) => {
       };
     });
 
-    
     for (const product of products) {
       await Product.updateOne(
         { productCode: product.productCode },
         { $set: product },
-        { upsert: true }
+        { upsert: true },
       );
     }
 
@@ -162,27 +150,26 @@ exports.importProducts = async(req, res) => {
       message: "Products imported successfully",
       count: products.length,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
   }
-}
+};
 
-exports.getProductBrands = async(req, res) => {
-  try{
+exports.getProductBrands = async (req, res) => {
+  try {
     const data = await Product.distinct("brand");
     res.status(200).json({
-      message : "Success",
-      data : data
-    })
-  }catch(err){
-     res.status(500).json({
+      message: "Success",
+      data: data,
+    });
+  } catch (err) {
+    res.status(500).json({
       message: "Error fetching brands",
-      error: err.message
+      error: err.message,
     });
   }
-}
+};
 
 exports.assignFocusProduct = async (req, res) => {
   try {
@@ -207,7 +194,7 @@ exports.assignFocusProduct = async (req, res) => {
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
 
     if (!updatedProduct) {
@@ -243,7 +230,7 @@ exports.unassignFocusProduct = async (req, res) => {
       {
         $set: { focusProduct: false },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedProduct) {
@@ -267,7 +254,7 @@ exports.getFocusProducts = async (req, res) => {
   try {
     const products = await Product.find({
       focusProduct: true,
-      isDeleted: false
+      isDeleted: false,
     });
 
     res.status(200).json(products);

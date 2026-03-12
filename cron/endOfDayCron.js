@@ -12,7 +12,7 @@ cron.schedule(
     const today = getToday();
 
     try {
-      // 1️⃣ Auto checkout all still checked-in
+      // 1️ Auto checkout all still checked-in
       await Attendance.updateMany(
         {
           date: today,
@@ -23,16 +23,13 @@ cron.schedule(
             endTime: new Date(),
             currentStatus: "checked-out",
           },
-        }
+        },
       );
 
       console.log("✅ Auto checkout completed");
 
-      // 2️⃣ Reset attendance for ALL staff (no dutyStatus condition)
-      await Staff.updateMany(
-        {},
-        { $set: { attendance: false } }
-      );
+      // 2️ Reset attendance for ALL staff (no dutyStatus condition)
+      await Staff.updateMany({}, { $set: { attendance: false } });
 
       console.log("🔄 All staff attendance reset to false");
 
@@ -43,5 +40,5 @@ cron.schedule(
   },
   {
     timezone: "Asia/Kolkata",
-  }
+  },
 );

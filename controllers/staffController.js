@@ -3,8 +3,6 @@ const uploadToCloudinary = require("../utils/cloudinaryUpload");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-
-
 // create employee
 exports.createStaff = async (req, res) => {
   try {
@@ -19,8 +17,8 @@ exports.createStaff = async (req, res) => {
       name: req.body.name,
       type: req.body.type,
       email: req.body.email,
-      mobile: req.body.mobile,          
-      password: req.body.mobile,        
+      mobile: req.body.mobile,
+      password: req.body.mobile,
       staffCode: req.body.staffCode,
       bloodGroup: req.body.bloodGroup,
       createdBy: req.body.createdBy,
@@ -33,34 +31,32 @@ exports.createStaff = async (req, res) => {
       message: "Staff created successfully",
       data: staff,
     });
-
   } catch (error) {
-  console.error("STAFF CREATE ERROR 👉", error);
+    console.error("STAFF CREATE ERROR 👉", error);
 
-  // ✅ Duplicate key error (MongoDB)
-  if (error?.code === 11000) {
-    const field = Object.keys(error.keyValue)[0];
-    const value = error.keyValue[field];
+    //  Duplicate key error (MongoDB)
+    if (error?.code === 11000) {
+      const field = Object.keys(error.keyValue)[0];
+      const value = error.keyValue[field];
 
-    return res.status(400).json({
-      message: `${field} ${value} already exists`,
+      return res.status(400).json({
+        message: `${field} ${value} already exists`,
+      });
+    }
+
+    //  Mongoose validation error
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({
+        message: errors.join(", "),
+      });
+    }
+
+    return res.status(500).json({
+      message: error.message || "Something went wrong",
     });
   }
-
-  // ✅ Mongoose validation error
-  if (error.name === "ValidationError") {
-    const errors = Object.values(error.errors).map(e => e.message);
-    return res.status(400).json({
-      message: errors.join(", "),
-    });
-  }
-
-  return res.status(500).json({
-    message: error.message || "Something went wrong",
-  });
-}
 };
-
 
 exports.changePassword = async (req, res) => {
   try {
@@ -68,8 +64,8 @@ exports.changePassword = async (req, res) => {
 
     const staff = await Staff.findById(req.params.id).select("+password");
 
-    staff.password = newPassword; 
-    await staff.save();           
+    staff.password = newPassword;
+    await staff.save();
 
     res.json({ message: "Password updated successfully" });
   } catch (error) {
@@ -77,19 +73,19 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-
 // get all wemployee
 exports.getAllStaff = async (req, res) => {
   try {
-    const staff = await Staff.find({ isDeleted: false }).sort({ createdAt: -1 });
+    const staff = await Staff.find({ isDeleted: false }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(staff);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-
-// get employeeby id 
+// get employeeby id
 exports.getStaffById = async (req, res) => {
   try {
     const staff = await Staff.findOne({
@@ -113,8 +109,11 @@ exports.updateStaff = async (req, res) => {
   try {
     const updateData = { ...req.body };
 
-    // ✅ Allow only valid dutyStatus values
-    if (updateData.dutyStatus && !["active", "inactive"].includes(updateData.dutyStatus)) {
+    //  Allow only valid dutyStatus values
+    if (
+      updateData.dutyStatus &&
+      !["active", "inactive"].includes(updateData.dutyStatus)
+    ) {
       return res.status(400).json({
         message: "Invalid dutyStatus. Allowed values: active, inactive",
       });
@@ -126,14 +125,10 @@ exports.updateStaff = async (req, res) => {
       updateData.img = result.secure_url;
     }
 
-    const staff = await Staff.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      {
-        new: true,
-        runValidators: true, // ✅ important
-      }
-    );
+    const staff = await Staff.findByIdAndUpdate(req.params.id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!staff) {
       return res.status(404).json({ message: "Staff not found" });
@@ -143,13 +138,11 @@ exports.updateStaff = async (req, res) => {
       message: "Staff updated successfully",
       data: staff,
     });
-
   } catch (error) {
     console.error("Update Staff Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // soft delete - isDeleted status will change
 exports.softDeleteStaff = async (req, res) => {
@@ -157,7 +150,7 @@ exports.softDeleteStaff = async (req, res) => {
     const staff = await Staff.findByIdAndUpdate(
       req.params.id,
       { isDeleted: true },
-      { new: true }
+      { new: true },
     );
 
     if (!staff) {
@@ -184,7 +177,7 @@ exports.changeStaffStatus = async (req, res) => {
     const staff = await Staff.findByIdAndUpdate(
       req.params.id,
       { staffStatus },
-      { new: true }
+      { new: true },
     );
 
     if (!staff) {
@@ -213,7 +206,7 @@ exports.uploadStaffDocument = async (req, res) => {
     const result = await uploadToCloudinary(
       req.file.buffer,
       `staff/${staffId}/documents`,
-      "raw"
+      "raw",
     );
 
     const staff = await Staff.findByIdAndUpdate(
@@ -227,7 +220,7 @@ exports.uploadStaffDocument = async (req, res) => {
           },
         },
       },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json({
@@ -269,7 +262,7 @@ exports.changeDutyStatus = async (req, res) => {
     const updatedStaff = await Staff.findByIdAndUpdate(
       req.params.id,
       { $set: updateFields },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedStaff) {
@@ -280,54 +273,52 @@ exports.changeDutyStatus = async (req, res) => {
       message: "Duty status updated successfully",
       data: updatedStaff,
     });
-
   } catch (error) {
     console.error("Change Duty Status Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
 
-exports.assignBrands = async(req, res) => {
-try {
+exports.assignBrands = async (req, res) => {
+  try {
     const { assignedBrands } = req.body;
 
     if (!Array.isArray(assignedBrands)) {
       return res.status(400).json({
         success: false,
-        message: 'assignedBrands must be an array'
+        message: "assignedBrands must be an array",
       });
     }
 
     const staff = await Staff.findByIdAndUpdate(
       req.params.id,
-      { 
+      {
         assignedBrands: assignedBrands,
       },
-      { 
-        new: true, 
-        runValidators: true 
-      }
-    ).select('-password');
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).select("-password");
 
     if (!staff) {
       return res.status(404).json({
         success: false,
-        message: 'Staff not found'
+        message: "Staff not found",
       });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Brands assigned successfully',
-      data: staff
+      message: "Brands assigned successfully",
+      data: staff,
     });
   } catch (error) {
-    console.error('Error assigning brands:', error);
+    console.error("Error assigning brands:", error);
     res.status(500).json({
       success: false,
-      message: 'Error assigning brands',
-      error: error.message
+      message: "Error assigning brands",
+      error: error.message,
     });
   }
-}
-
+};
