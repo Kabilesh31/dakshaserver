@@ -14,7 +14,9 @@ router
     .route("/")
     .get(authController.protect, userController.getAllUser)
     .post(authController.protect, userController.createUser)
- 
+
+router.get("/me", authController.protect, userController.getMe);
+
 router
     .route("/:id")
     .get(authController.protect, userController.getUser)
