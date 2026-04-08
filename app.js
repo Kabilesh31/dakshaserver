@@ -21,11 +21,6 @@ const staffAuthRoutes = require("./routes/staffAuthRoutes");
 const locationRoutes = require("./routes/locationRoutes");
 const billRoutes = require("./routes/billsRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
-const endOfDayCron = require("./cron/endOfDayCron");
-const customerVisitReset = require("./cron/customerVisitReset");
-
-
-
 const vehicle = require('./routes/vehicleRoutes');
 const routeZone = require("./routes/routeRoutes");
 const routeAssign = require("./routes/routeAssignmentRoutes");
@@ -35,13 +30,13 @@ const deliveryRoutes = require("./routes/deliveryRoutes");
 app.use(express.json());
 
 const allowedOrigins = [
-    "http://localhost:3000", // Web
+    "http://localhost:3000", 
     "https://retailpulse2.netlify.app",
     "https://kochai.netlify.app",
-    "http://192.168.56.1:3000"
-    // "http://localhost:8081", // React Native
-    // "http://192.168.0.107:8081", // Ensure this is the correct IP and port
-    // "http://192.168.3.176:8081"
+    "http://192.168.56.1:3000",
+    "http://localhost:8081", 
+    "http://192.168.1.37:8081",
+    "http://192.168.56.1:8081"
 ];
 
 app.get('/', (req, res) => {
