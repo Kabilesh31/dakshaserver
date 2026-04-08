@@ -30,7 +30,7 @@ cron.schedule(
         });
 
         console.log(
-          `✅ ${staff.name} auto-closed. Worked: ${workedHours} hours`
+          `✅ ${staff.name} auto-closed. Worked: ${workedHours} hours`,
         );
 
         updatedCount++;
@@ -43,5 +43,5 @@ cron.schedule(
   },
   {
     timezone: "Asia/Kolkata",
-  }
+  },
 );

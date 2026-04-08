@@ -66,13 +66,12 @@ exports.createBill = async (req, res) => {
       timeAgo: "just now",
     });
 
-
     const customerUpdate = {
       lastOrderDate: new Date(),
-      isVisited : true,
-      visitedAt : new Date(),
-      waitingApprove : true,
-      recentOrderId: bill._id, 
+      isVisited: true,
+      visitedAt: new Date(),
+      waitingApprove: true,
+      recentOrderId: bill._id,
       nextVisit: {
         nextVisitDate: null,
         notes: null,
@@ -87,27 +86,22 @@ exports.createBill = async (req, res) => {
       customerUpdate.gst = gst;
     }
     if (!paidStatus) {
-    customerUpdate.$inc = {
-      paymentPendingAmount: totalAmt,
-    };
-}
+      customerUpdate.$inc = {
+        paymentPendingAmount: totalAmt,
+      };
+    }
 
     await Customer.findByIdAndUpdate(customerId, customerUpdate, {
       new: true,
     });
 
     const customer = mongoose.Types.ObjectId.isValid(customerId)
-      ? await Customer.findById(customerId)
-          .select("name phone address")
-          .lean()
+      ? await Customer.findById(customerId).select("name phone address").lean()
       : null;
 
     const staff = mongoose.Types.ObjectId.isValid(createdBy)
-      ? await Staff.findById(createdBy)
-          .select("name mobile type")
-          .lean()
+      ? await Staff.findById(createdBy).select("name mobile type").lean()
       : null;
-
 
     res.status(201).json({
       message: "Bill created successfully",
@@ -170,7 +164,7 @@ exports.getBills = async (req, res) => {
               }
             : null,
         };
-      })
+      }),
     );
 
     res.status(200).json({
@@ -182,7 +176,6 @@ exports.getBills = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch bills" });
   }
 };
-
 
 exports.getBillById = async (req, res) => {
   try {
@@ -216,19 +209,28 @@ exports.getBillById = async (req, res) => {
       bill: {
         ...bill,
         customerDetails: customer
-          ? { name: customer.name, mobile: customer.mobile || "-", address: customer.address || "-" }
+          ? {
+              name: customer.name,
+              mobile: customer.mobile || "-",
+              address: customer.address || "-",
+            }
           : { name: bill.customerName, mobile: "-", address: "-" },
         staffDetails: staff
-          ? { name: staff.name, mobile: staff.mobile || "-", type: staff.type || "-" }
+          ? {
+              name: staff.name,
+              mobile: staff.mobile || "-",
+              type: staff.type || "-",
+            }
           : { name: "Unassigned", mobile: "-", type: "-" },
       },
     });
   } catch (error) {
     console.error("getBillById error:", error);
-    res.status(500).json({ message: "Failed to fetch bill", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch bill", error: error.message });
   }
 };
-
 
 exports.changeOrderStatus = async (req, res) => {
   try {
@@ -264,28 +266,27 @@ exports.changeOrderStatus = async (req, res) => {
     bill.orderStatus = orderStatus;
     await bill.save();
     // IF APPROVED → set flags
-   if (orderStatus === "approved") {
-    await Customer.findByIdAndUpdate(
-      bill.customerId,
-      {
-        $set: {
-          orderPending: true,
-          lastOrderRejected : false,
-          waitingApprove: false,
-          paymentPending: !bill.paidStatus,
+    if (orderStatus === "approved") {
+      await Customer.findByIdAndUpdate(
+        bill.customerId,
+        {
+          $set: {
+            orderPending: true,
+            lastOrderRejected: false,
+            waitingApprove: false,
+            paymentPending: !bill.paidStatus,
+          },
         },
-      },
-      { new: true }
-    );
-  }
-
+        { new: true },
+      );
+    }
 
     if (orderStatus === "rejected") {
       await Customer.findByIdAndUpdate(bill.customerId, {
         orderPending: false,
         paymentPending: false,
-        waitingApprove : false,
-        lastOrderRejected : true
+        waitingApprove: false,
+        lastOrderRejected: true,
       });
     }
 
@@ -339,7 +340,6 @@ exports.changeOrderStatus = async (req, res) => {
 //     { new: true }
 //   );
 
-
 //     res.status(200).json({
 //       message: "Payment confirmed and customer payment cleared",
 //       bill,
@@ -350,16 +350,11 @@ exports.changeOrderStatus = async (req, res) => {
 //   }
 // };
 
+exports.markHasDelivered = async (req, res) => {
+  const { id } = req.params;
+  const { deliveredBy, deliveryPersonId, deliveryLocation } = req.body;
 
-exports.markHasDelivered = async(req, res) => {
-  const {id} = req.params;
-  const { 
-    deliveredBy,          
-    deliveryPersonId,  
-    deliveryLocation       
-  } = req.body;
-  
-  try{
+  try {
     // Parse deliveryLocation if it's sent as string
     const locationData =
       typeof deliveryLocation === "string"
@@ -376,86 +371,83 @@ exports.markHasDelivered = async(req, res) => {
 
     const bill = await Bill.findOne({
       customerId: id,
-      orderStatus: "approved"
+      orderStatus: "approved",
     });
 
-    if(!bill) {
+    if (!bill) {
       return res.status(404).json({
         success: false,
-        message: "No pending bill found for this customer"
+        message: "No pending bill found for this customer",
       });
     }
 
-    
     bill.orderStatus = "delivered";
     bill.deliveredAt = new Date();
-    bill.deliveredBy = deliveredBy;                    
-    bill.deliveryPersonId = deliveryPersonId;         
+    bill.deliveredBy = deliveredBy;
+    bill.deliveryPersonId = deliveryPersonId;
     bill.deliveryLocation = {
       latitude: locationData.lat,
       longitude: locationData.long,
-    };             
-    bill.deliveryImage = deliveryImageUrl;            
+    };
+    bill.deliveryImage = deliveryImageUrl;
 
     await bill.save();
-    
+
     // Update customer's orderPending status
     await Customer.findByIdAndUpdate(
       id,
       { orderPending: false },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json({
       success: true,
       message: "Order marked as delivered",
-      data: bill
+      data: bill,
     });
-  }catch(err){
-    console.error(err); 
+  } catch (err) {
+    console.error(err);
     res.status(500).json({
       success: false,
-      message: "Server error"
+      message: "Server error",
     });
   }
 };
 
-
 exports.updatePaymentStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const {paymentMethod, paymentCollectedBy} = req.body;
+    const { paymentMethod, paymentCollectedBy } = req.body;
 
     const bill = await Bill.findOne({
-      customerId : id,
-      paidStatus : false
-    })
+      customerId: id,
+      paidStatus: false,
+    });
 
-    if(!bill) {
+    if (!bill) {
       return res.status(404).json({
         success: false,
-        message: "No pending bill found for this customer"
-      })
+        message: "No pending bill found for this customer",
+      });
     }
 
     bill.paidStatus = true;
-    bill.paymentMethod = paymentMethod
-    bill.paymentCollectedBy = paymentCollectedBy
-    bill.paymentCollectedAt = new Date()
-    await bill.save()
+    bill.paymentMethod = paymentMethod;
+    bill.paymentCollectedBy = paymentCollectedBy;
+    bill.paymentCollectedAt = new Date();
+    await bill.save();
 
     await Customer.findByIdAndUpdate(
-      id, 
-      { paymentPending : false, paymentPendingAmount : 0},
-      { new : true}
-    )
+      id,
+      { paymentPending: false, paymentPendingAmount: 0 },
+      { new: true },
+    );
 
     res.status(200).json({
       success: true,
       message: "Payment Marked Successfull",
-      data: bill
-    })
-  
+      data: bill,
+    });
   } catch (error) {
     console.error("Update Payment Status error:", error);
     res.status(500).json({ message: error.message });
@@ -464,55 +456,50 @@ exports.updatePaymentStatus = async (req, res) => {
 
 exports.getBillsByStaff = async (req, res) => {
   try {
-    const {id} = req.params;
-   
+    const { id } = req.params;
+
     const bills = await Bill.find({
-     $or : [
-       {paymentCollectedBy: id},
-        {createdBy: id}
-     ]
+      $or: [{ paymentCollectedBy: id }, { createdBy: id }],
     });
 
     if (!bills.length) {
       return res.status(404).json({
-        message: "No Bills Found"
+        message: "No Bills Found",
       });
     }
 
     res.status(200).json({
       message: "Success",
-      data: bills
+      data: bills,
     });
-
   } catch (err) {
     res.status(500).json({
-      message: err.message
+      message: err.message,
     });
   }
 };
 
 exports.getBillsByDeliveryStaff = async (req, res) => {
   try {
-    const {id} = req.params;
-    
+    const { id } = req.params;
+
     const bills = await Bill.find({
-      deliveryPersonId: id
+      deliveryPersonId: id,
     });
 
     if (!bills.length) {
       return res.status(404).json({
-        message: "No Bills Found"
+        message: "No Bills Found",
       });
     }
 
     res.status(200).json({
       message: "Success",
-      data: bills
+      data: bills,
     });
-
   } catch (err) {
     res.status(500).json({
-      message: err.message
+      message: err.message,
     });
   }
 };

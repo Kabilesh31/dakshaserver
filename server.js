@@ -15,7 +15,7 @@ const io = new Server(server, {
   },
 });
 
-// 🔥 Initialize socket logic
+//  Initialize socket logic
 initSocket(io);
 
 server.listen(PORT, () => {

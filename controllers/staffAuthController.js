@@ -8,15 +8,18 @@ exports.staffLoginWithEmail = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
     const staff = await Staff.findOne({
       email: email.toLowerCase(),
-      isDeleted: false
+      isDeleted: false,
     }).select("+password");
 
-    if (!staff) return res.status(401).json({ message: "Invalid email or password" });
+    if (!staff)
+      return res.status(401).json({ message: "Invalid email or password" });
 
     if (staff.staffStatus !== "active")
       return res.status(403).json({ message: "Staff account inactive" });
@@ -32,10 +35,10 @@ exports.staffLoginWithEmail = async (req, res) => {
       {
         id: staff._id,
         role: "staff",
-        tokenVersion: staff.tokenVersion
+        tokenVersion: staff.tokenVersion,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     res.status(200).json({
@@ -50,10 +53,9 @@ exports.staffLoginWithEmail = async (req, res) => {
         staffStatus: staff.staffStatus,
         dutyStatus: staff.dutyStatus,
         img: staff.img,
-        attendance :staff.attendance
+        attendance: staff.attendance,
       },
     });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -63,7 +65,9 @@ exports.staffLoginWithEmail = async (req, res) => {
 exports.getMyProfile = async (req, res) => {
   try {
     const staff = req.staff; // from isStaffAuthenticated middleware
-    res.status(200).json({ message: "Staff profile fetched successfully", staff });
+    res
+      .status(200)
+      .json({ message: "Staff profile fetched successfully", staff });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

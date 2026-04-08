@@ -1,65 +1,65 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
-    productName: {
-        type:String,
-        required:[true,"Please Enter Your Name"],
-        minLength: 3
-    },
-    productCode:{
-      type:String,
-      required:true
-    },
-    brand :{
-      type :  String,
-      required : true,
-    },
-    value : {
-      type : Number,
-      required : true
-    },
-    boxPacking : {
-      type : Boolean,
-      required : false
-    },
-    ptr1 : {
-      type : Number
-    },
-    ptr2 : {
-      type : Number
-    },
-    ptr3 : {
-      type : Number
-    },
-    notes : {
-      type : String
-    },
-    img : {
-      type : String
-    },
-    packing : {
-      type : String,
-      default : "1 X 1"
-    },
-    gst : {
-      type : Number,
-      default : 0
-    }, 
-    createdBy: {
-      type : String
-    },
-    createdAt : {
-      type : Date,
-      default : Date.now
-    },
-    isDeleted : {
-      type : Boolean,
-      default : false
-    },
-    focusProduct: {
-  type: Boolean,
-  default: false
-},
-})
+  productName: {
+    type: String,
+    required: [true, "Please Enter Your Name"],
+    minLength: 3,
+  },
+  productCode: {
+    type: String,
+    required: true,
+  },
+  brand: {
+    type: String,
+    required: true,
+  },
+  value: {
+    type: Number,
+    required: true,
+  },
+  boxPacking: {
+    type: Boolean,
+    required: false,
+  },
+  ptr1: {
+    type: Number,
+  },
+  ptr2: {
+    type: Number,
+  },
+  ptr3: {
+    type: Number,
+  },
+  notes: {
+    type: String,
+  },
+  img: {
+    type: String,
+  },
+  packing: {
+    type: String,
+    default: "1 X 1",
+  },
+  gst: {
+    type: Number,
+    default: 0,
+  },
+  createdBy: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  focusProduct: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-module.exports = mongoose.model("Product", productSchema)
+module.exports = mongoose.model("Product", productSchema);

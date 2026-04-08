@@ -1,142 +1,142 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const customerSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Please Enter Customer Name"],
-    minLength: 3
+    minLength: 3,
   },
   phone: {
-  type: String,
-  required: true,
-  trim: true
-},
+    type: String,
+    required: true,
+    trim: true,
+  },
 
-phone2: {
-  type: String,
-  trim: true
-},
+  phone2: {
+    type: String,
+    trim: true,
+  },
   address: {
     type: String,
-    required: true
+    required: true,
   },
   routeName: {
     type: String,
   },
   routeId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Route"
+    ref: "Route",
   },
   lineNo: {
     type: Number,
     default: 0,
   },
   creditDays: {
-    type: Number
+    type: Number,
   },
   pincode: {
     type: Number,
   },
   geoLocation: {
     lat: {
-      type: String
+      type: String,
     },
     long: {
-      type: String
-    }
+      type: String,
+    },
   },
 
-   orderPending: {
+  orderPending: {
     type: Boolean,
-    default: false
+    default: false,
   },
-  waitingApprove : {
-    type :Boolean,
-    default : false
+  waitingApprove: {
+    type: Boolean,
+    default: false,
   },
 
   paymentPending: {
     type: Boolean,
-    default: false
+    default: false,
   },
 
   paymentPendingAmount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   gst: {
-    type: String, 
-    trim: true
+    type: String,
+    trim: true,
   },
 
   lastOrderDate: {
-    type: Date
+    type: Date,
   },
-  recentOrderId : {
-    type: String, 
-    default : null
+  recentOrderId: {
+    type: String,
+    default: null,
   },
   isVisited: {
     type: Boolean,
-    default: false
+    default: false,
   },
   visitedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Staff"
+    ref: "Staff",
   },
   visitedAt: {
-    type: Date
+    type: Date,
   },
   nextVisit: {
     nextVisitDate: {
       type: Date,
-      default: null
+      default: null,
     },
     notes: {
       type: String,
       default: null,
-      trim: true
+      trim: true,
     },
     currentVisitLocation: {
-        lat: {
-          type: String,
-          default: null
-        },
-        long: {
-          type: String,
-          default: null
-        }
-      }
+      lat: {
+        type: String,
+        default: null,
+      },
+      long: {
+        type: String,
+        default: null,
+      },
+    },
   },
-  isNew : {
-    type : Boolean,
-    default : true
+  isNew: {
+    type: Boolean,
+    default: true,
   },
   isDeleted: {
     type: Boolean,
-    default: false
+    default: false,
   },
   createdBy: {
-    type: String
+    type: String,
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   img: {
-    type: String
+    type: String,
   },
   category: {
-    type: String 
+    type: String,
   },
-  lastOrderRejected : {
-    type : Boolean,
-    default : false
-  }, 
+  lastOrderRejected: {
+    type: Boolean,
+    default: false,
+  },
   status: {
     type: Boolean,
-    default: true
+    default: true,
   },
-})
+});
 
-module.exports = mongoose.model("Customer", customerSchema)
+module.exports = mongoose.model("Customer", customerSchema);

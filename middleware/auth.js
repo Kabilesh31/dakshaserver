@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const Staff = require("../model/staffModal");
-const User = require("../model/userModel")
+const User = require("../model/userModel");
 
 exports.isStaffAuthenticated = async (req, res, next) => {
   try {
@@ -28,10 +28,9 @@ exports.isStaffAuthenticated = async (req, res, next) => {
       return res.status(403).json({ message: "Staff account is inactive" });
     }
 
-
     if (decoded.tokenVersion !== staff.tokenVersion) {
       return res.status(401).json({
-        message: "Logged in from another device"
+        message: "Logged in from another device",
       });
     }
 
@@ -39,7 +38,6 @@ exports.isStaffAuthenticated = async (req, res, next) => {
     req.staffId = staff._id;
 
     next();
-
   } catch (error) {
     return res.status(401).json({ message: "Invalid token" });
   }
@@ -47,7 +45,6 @@ exports.isStaffAuthenticated = async (req, res, next) => {
 
 exports.protectAny = async (req, res, next) => {
   try {
-
     let token;
 
     if (
@@ -67,10 +64,11 @@ exports.protectAny = async (req, res, next) => {
     const staff = await Staff.findById(decoded.id);
 
     if (staff) {
-
       // Check tokenVersion
       if (decoded.tokenVersion !== staff.tokenVersion) {
-        return res.status(401).json({ message: "Logged in from another device" });
+        return res
+          .status(401)
+          .json({ message: "Logged in from another device" });
       }
 
       req.staff = staff;
@@ -96,7 +94,6 @@ exports.protectAny = async (req, res, next) => {
     req.userType = "user";
 
     next();
-
   } catch (err) {
     return res.status(401).json({ message: "Invalid token" });
   }

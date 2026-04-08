@@ -49,14 +49,15 @@ exports.createCustomer = async (req, res) => {
     }
 
     if (!createdCustomer) {
-      return res.status(500).json({ message: "Failed to generate unique line number" });
+      return res
+        .status(500)
+        .json({ message: "Failed to generate unique line number" });
     }
 
     res.status(201).json({
       message: "Customer created successfully",
       data: createdCustomer,
     });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -64,18 +65,16 @@ exports.createCustomer = async (req, res) => {
 
 exports.getCustomers = async (req, res) => {
   try {
-    const customers = await Customer.find({ isDeleted: false })
-      .sort({
-        routeId: 1,  
-        lineNo: 1    
-      });
+    const customers = await Customer.find({ isDeleted: false }).sort({
+      routeId: 1,
+      lineNo: 1,
+    });
 
     res.status(200).json(customers);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 exports.getCustomerById = async (req, res) => {
   try {
@@ -94,23 +93,19 @@ exports.getCustomerById = async (req, res) => {
   }
 };
 
-
 exports.updateCustomer = async (req, res) => {
   try {
     const updateData = { ...req.body };
 
     if (req.file) {
-      const result = await uploadToCloudinary(
-        req.file.buffer,
-        "customers"
-      );
+      const result = await uploadToCloudinary(req.file.buffer, "customers");
       updateData.img = result.secure_url;
     }
 
     const customer = await Customer.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true }
+      { new: true },
     );
 
     if (!customer) {
@@ -126,14 +121,13 @@ exports.updateCustomer = async (req, res) => {
   }
 };
 
-
 // Delete Customer
 exports.deleteCustomer = async (req, res) => {
   try {
     const customer = await Customer.findByIdAndUpdate(
       req.params.id,
       { isDeleted: true },
-      { new: true }
+      { new: true },
     );
 
     if (!customer) {
@@ -148,7 +142,6 @@ exports.deleteCustomer = async (req, res) => {
   }
 };
 
-
 // customer Status Change
 exports.changeCustomerStatus = async (req, res) => {
   try {
@@ -157,7 +150,7 @@ exports.changeCustomerStatus = async (req, res) => {
     const customer = await Customer.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!customer) {
@@ -173,10 +166,11 @@ exports.changeCustomerStatus = async (req, res) => {
   }
 };
 
-
 exports.getCustomers = async (req, res) => {
-  const customers = await Customer.find({ isDeleted: false })
-    .sort({ routeId: 1, lineNo: 1 });
+  const customers = await Customer.find({ isDeleted: false }).sort({
+    routeId: 1,
+    lineNo: 1,
+  });
 
   res.json(customers);
 };
@@ -190,10 +184,17 @@ exports.getCustomersByRoute = async (req, res) => {
     }).sort({ lineNo: 1 });
 
     // Filter invalid coordinates
-    customers = customers.filter(c => {
+    customers = customers.filter((c) => {
       const lat = Number(c.geoLocation?.lat);
       const lng = Number(c.geoLocation?.long);
-      return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+      return (
+        !isNaN(lat) &&
+        !isNaN(lng) &&
+        lat >= -90 &&
+        lat <= 90 &&
+        lng >= -180 &&
+        lng <= 180
+      );
     });
 
     res.status(200).json(customers);
@@ -221,7 +222,8 @@ exports.getCustomerByStaffId = async (req, res) => {
 exports.toggleVisitStatus = async (req, res) => {
   try {
     const { customerId } = req.params;
-    const { staffId, action, nextVisitDate, notes, currentVisitLocation } = req.body;
+    const { staffId, action, nextVisitDate, notes, currentVisitLocation } =
+      req.body;
 
     if (!mongoose.Types.ObjectId.isValid(staffId)) {
       return res.status(400).json({ message: "Invalid staffId" });
@@ -245,7 +247,9 @@ exports.toggleVisitStatus = async (req, res) => {
       });
     }
 
-    const staffType = String(staff.type || "").trim().toLowerCase();
+    const staffType = String(staff.type || "")
+      .trim()
+      .toLowerCase();
 
     if (staffType !== "sales") {
       return res.status(403).json({
@@ -261,27 +265,26 @@ exports.toggleVisitStatus = async (req, res) => {
         visitedBy: staff._id,
         visitedAt: new Date(),
       };
-    } 
-    else if (action === "out") {
+    } else if (action === "out") {
       // Validate location if provided (optional now)
       if (currentVisitLocation) {
         if (!currentVisitLocation.lat || !currentVisitLocation.long) {
           return res.status(400).json({
-            message: "Both latitude and longitude are required when location is provided",
+            message:
+              "Both latitude and longitude are required when location is provided",
           });
         }
-        
+
         // Validate that lat/long are valid numbers
         const lat = parseFloat(currentVisitLocation.lat);
         const long = parseFloat(currentVisitLocation.long);
-        
+
         if (isNaN(lat) || isNaN(long)) {
           return res.status(400).json({
             message: "Invalid latitude or longitude values",
           });
         }
       }
-
 
       updateData = {
         isVisited: true,
@@ -303,10 +306,14 @@ exports.toggleVisitStatus = async (req, res) => {
       }
 
       // Add current visit location if provided
-      if (currentVisitLocation && currentVisitLocation.lat && currentVisitLocation.long) {
+      if (
+        currentVisitLocation &&
+        currentVisitLocation.lat &&
+        currentVisitLocation.long
+      ) {
         nextVisitObj.currentVisitLocation = {
           lat: currentVisitLocation.lat,
-          long: currentVisitLocation.long
+          long: currentVisitLocation.long,
         };
       }
 
@@ -314,8 +321,7 @@ exports.toggleVisitStatus = async (req, res) => {
       if (Object.keys(nextVisitObj).length > 0) {
         updateData.nextVisit = nextVisitObj;
       }
-    } 
-    else {
+    } else {
       return res.status(400).json({
         message: "Action must be 'in' or 'out'",
       });
@@ -324,7 +330,7 @@ exports.toggleVisitStatus = async (req, res) => {
     const customer = await Customer.findOneAndUpdate(
       { _id: customerId, isDeleted: false },
       { $set: updateData },
-      { new: true }
+      { new: true },
     );
 
     if (!customer) {
@@ -337,7 +343,6 @@ exports.toggleVisitStatus = async (req, res) => {
       message: `Customer visit marked ${action}`,
       data: customer,
     });
-
   } catch (error) {
     console.error("Visit API Error:", error);
     return res.status(500).json({

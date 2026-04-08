@@ -8,14 +8,14 @@ cron.schedule(
       console.log("🔄 Customer visit reset started");
 
       await Customer.updateMany(
-        {}, // 🔥 Reset ALL customers
+        {}, //  Reset ALL customers
         {
           $set: {
             isVisited: false,
             visitedBy: null,
             visitedAt: null,
           },
-        }
+        },
       );
 
       console.log("✅ Customer visit reset completed");
@@ -25,5 +25,5 @@ cron.schedule(
   },
   {
     timezone: "Asia/Kolkata",
-  }
+  },
 );

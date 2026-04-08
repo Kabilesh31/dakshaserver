@@ -31,10 +31,10 @@ const notificationSchema = new mongoose.Schema(
 
     seen: {
       type: Boolean,
-      default: false, // 👈 unread by default
+      default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Notification", notificationSchema);
