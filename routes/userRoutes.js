@@ -14,9 +14,11 @@ router.patch(
 );
 
 router
-  .route("/")
-  .get(authController.protect, userController.getAllUser)
-  .post(authController.protect, userController.createUser);
+    .route("/")
+    .get(authController.protect, userController.getAllUser)
+    .post(authController.protect, userController.createUser)
+
+router.get("/me", authController.protect, userController.getMe);
 
 router
   .route("/:id")

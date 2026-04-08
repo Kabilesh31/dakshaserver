@@ -24,16 +24,37 @@ exports.getUser = catchAsync(async (req, res, next) => {
   res.status(200).json(data);
 });
 
-exports.updateUser = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-  const data = await User.findByIdAndUpdate(id, req.body, {
-    new: true,
-  });
-  if (!data) {
-    return next(new AppError("This id Cant Find", 404));
+exports.getUser = catchAsync (async (req, res, next) => {
+    
+        const data = await User.findById(req.params.id)
+        res.status(200).json(data)
+    
+    })
+    
+exports.updateUser = catchAsync( async(req, res, next) => {
+    const id = req.params.id
+    const data = await User.findByIdAndUpdate(id, req.body,{
+        new: true
+    })
+    if(!data){
+        return next(new AppError("This id Cant Find", 404))
+    }
+    res.status(200).json({
+        status:"Success",
+        data: data
+    })
+})
+
+exports.getMe = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return next(new AppError("User not found", 404));
   }
+
   res.status(200).json({
-    status: "Success",
-    data: data,
+    status: "success",
+    data: user,
   });
 });
+    
